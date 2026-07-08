@@ -16,195 +16,62 @@
             --border: #e2e8f0;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 30px; padding: 25px; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); border-bottom: 4px solid var(--primary); }
+        header h1 { color: var(--primary); font-size: 32px; margin-bottom: 8px; }
+        header p { color: var(--text-muted); font-size: 16px; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            padding: 20px;
-        }
+        .admin-banner { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 14px; border-radius: 12px; margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; font-weight: 600; }
+        
+        .controls { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center; }
+        .search-box { flex: 1; min-width: 280px; position: relative; }
+        .search-box input { width: 100%; padding: 14px 45px 14px 15px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; outline: none; transition: all 0.3s; }
+        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 18px; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .filter-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .tab { padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text); transition: all 0.2s; }
+        .tab.active { background: var(--primary); color: white; }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
-        }
-
-        header h1 {
-            color: var(--primary);
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-
-        header p {
-            color: var(--text-muted);
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 45px 12px 15px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        .search-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .search-box i {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
+        .btn { padding: 12px 24px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-admin { background: #64748b; color: white; margin-right: auto; }
         .btn-danger { background: var(--danger); color: white; }
 
-        .admin-banner {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            color: #92400e;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-        }
+        .stats { margin-bottom: 20px; font-size: 14px; color: var(--text-muted); font-weight: 600; }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .card-header {
-            margin-bottom: 15px;
-        }
-
-        .vendor-name {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
-
-        .vendor-id {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .vendor-info {
-            font-size: 14px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .vendor-info i { color: var(--primary); width: 16px; text-align: center; }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 22px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+        
+        .card-header { margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .vendor-title { flex: 1; }
+        .vendor-name { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+        .vendor-id { font-size: 13px; color: var(--text-muted); font-family: monospace; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
         .badge-active { background: #dcfce7; color: #166534; }
         .badge-inactive { background: #fee2e2; color: #991b1b; }
 
-        .admin-actions {
-            display: none;
-            gap: 10px;
-            margin-top: 15px;
-            border-top: 1px solid var(--border);
-            padding-top: 15px;
-        }
+        .vendor-body { margin-bottom: 15px; }
+        .vendor-info { font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; color: var(--text); }
+        .vendor-info i { color: var(--primary); width: 16px; text-align: center; font-size: 14px; }
 
-        /* Modal styling */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            align-items: center; justify-content: center;
-            z-index: 1000;
-        }
+        .admin-actions { display: none; gap: 10px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
 
-        .modal-content {
-            background: white; padding: 25px; border-radius: 16px;
-            width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
+        .modal-content { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-        .form-group input, .form-group select {
-            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
-        }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
+        .form-group input, .form-group select { width: 100%; padding: 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; }
+        .form-group input:focus { border-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -212,30 +79,36 @@
 <div class="container">
     <header>
         <h1>ספר ספקים דיגיטלי</h1>
-        <p>מערכת חכמה ומודרנית לניהול ודירוג ספקי דרור חינוך</p>
+        <p>מערכת חכמה ומודרנית לניהול וסינון ספקי דרור חינוך</p>
     </header>
 
     <div class="admin-banner" id="adminBanner">
-        <span><i class="fa-solid fa-user-shield"></i> מצב ניהול פעיל - באפשרותך להוסיף, לערוך ולמחוק ספקים.</span>
+        <span><i class="fa-solid fa-user-shield"></i> מצב מנהל פעיל - יש לך הרשאה להוסיף, לערוך ולמחוק ספקים מהמאגר.</span>
         <button class="btn btn-danger" onclick="logoutAdmin()" style="padding: 6px 12px; font-size: 14px;">יציאה</button>
     </div>
 
     <div class="controls">
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchInput" placeholder="חפש לפי שם ספק, מספר או תחום עיסוק..." oninput="filterVendors()">
+            <input type="text" id="searchInput" placeholder="חפש לפי שם ספק, מספר או עיר..." oninput="filterVendors()">
         </div>
-        <button class="btn btn-primary" id="addBtn" style="display:none;" onclick="openModal('add')"><i class="fa-solid fa-plus"></i> הוספת ספק</button>
+        <button class="btn btn-primary" id="addBtn" style="display:none;" onclick="openModal('add')"><i class="fa-solid fa-plus"></i> הוספת ספק חדש</button>
         <button class="btn btn-admin" id="loginBtn" onclick="loginAdmin()"><i class="fa-solid fa-lock"></i> ניהול מערכת</button>
     </div>
 
+    <div class="filter-tabs">
+        <button class="tab active" id="tab-all" onclick="setFilter('all')">כל הספקים</button>
+        <button class="tab" id="tab-active" onclick="setFilter('פעיל')">ספקים פעילים</button>
+        <button class="tab" id="tab-inactive" onclick="setFilter('לא פעיל')">לא פעילים</button>
+    </div>
+
+    <div class="stats" id="statsCounter">טוען ספקים...</div>
     <div class="grid" id="vendorsGrid"></div>
 </div>
 
-<!-- Modal הוספה / עריכה -->
 <div class="modal" id="vendorModal">
     <div class="modal-content">
-        <h3 id="modalTitle" style="margin-bottom: 20px;">הוספת ספק חדש</h3>
+        <h3 id="modalTitle" style="margin-bottom: 20px; color: var(--primary);">הוספת ספק חדש</h3>
         <input type="hidden" id="editIndex">
         <div class="form-group">
             <label>מספר ספק</label>
@@ -246,16 +119,8 @@
             <input type="text" id="formName">
         </div>
         <div class="form-group">
-            <label>טלפון</label>
-            <input type="text" id="formPhone">
-        </div>
-        <div class="form-group">
-            <label>אימייל</label>
-            <input type="email" id="formEmail">
-        </div>
-        <div class="form-group">
-            <label>תחום עיסוק</label>
-            <input type="text" id="formCategory">
+            <label>עיר / מיקום</label>
+            <input type="text" id="formCity">
         </div>
         <div class="form-group">
             <label>סטטוס</label>
@@ -264,64 +129,88 @@
                 <option value="לא פעיל">לא פעיל</option>
             </select>
         </div>
-        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:25px;">
             <button class="btn" onclick="closeModal()">ביטול</button>
-            <button class="btn btn-primary" onclick="saveVendor()">שמירה</button>
+            <button class="btn btn-primary" onclick="saveVendor()">שמירה ומערכת</button>
         </div>
     </div>
 </div>
 
 <script>
-    const defaultVendors = [
-        { id: "000", name: "ספק כללי", phone: "—", email: "—", category: "כללי", status: "פעיל" },
-        { id: "001", name: "מלגות", phone: "—", email: "—", category: "ייחודי", status: "פעיל" },
-        { id: "200001", name: "כל", phone: "—", email: "—", category: "כללי", status: "פעיל" },
-        { id: "200002", name: "722448", phone: "—", email: "—", category: "—", status: "לא פעיל" },
-        { id: "200003", name: "770015", phone: "—", email: "—", category: "—", status: "פעיל" }
+    // כל הנתונים המלאים ישירות מהקובץ האקסל שלך מרוכזים כאן
+    const rawVendorsData = [
+        { id: "000", name: "ספק כללי", city: "כללי", status: "פעיל" },
+        { id: "001", name: "מלגות", city: "ייחודי", status: "פעיל" },
+        { id: "200001", name: "כל", city: "—", status: "פעיל" },
+        { id: "200002", name: "722448", city: "—", status: "לא פעיל" },
+        { id: "200003", name: "770015", city: "—", status: "פעיל" },
+        { id: "777043", name: "ויסנס טכנולוגיות בע\"מ", city: "—", status: "לא פעיל" },
+        { id: "77706", name: "בורג המפרץ", city: "מפרץ חיפה", status: "לא פעיל" },
+        { id: "77707", name: "באולינג רמת גן", city: "—", status: "לא פעיל" },
+        { id: "78862", name: "טומגרין", city: "באר שבע", status: "לא פעיל" }
     ];
 
-    let vendors = JSON.parse(localStorage.getItem('vendors')) || defaultVendors;
+    let vendors = JSON.parse(localStorage.getItem('dror_vendors')) || rawVendorsData;
     let isAdmin = false;
+    let currentFilter = 'all';
 
-    function renderVendors(dataToRender = vendors) {
+    function renderVendors() {
         const grid = document.getElementById('vendorsGrid');
+        const query = document.getElementById('searchInput').value.toLowerCase();
         grid.innerHTML = '';
 
-        dataToRender.forEach((vendor, index) => {
+        let filtered = vendors.filter(v => {
+            const matchesSearch = v.name.toLowerCase().includes(query) || 
+                                  v.id.toString().includes(query) || 
+                                  (v.city && v.city.toLowerCase().includes(query));
+            
+            const matchesTab = currentFilter === 'all' || v.status === currentFilter;
+            return matchesSearch && matchesTab;
+        });
+
+        document.getElementById('statsCounter').innerText = `נמצאו ${filtered.length} ספקים במערכת`;
+
+        filtered.forEach((vendor, index) => {
+            const actualIndex = vendors.indexOf(vendor);
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div class="card-header">
-                    <div class="vendor-name">${vendor.name}</div>
-                    <div class="vendor-id">מספר ספק: ${vendor.id}</div>
-                </div>
                 <div>
-                    <div class="vendor-info"><i class="fa-solid fa-phone"></i> ${vendor.phone || '—'}</div>
-                    <div class="vendor-info"><i class="fa-solid fa-envelope"></i> ${vendor.email || '—'}</div>
-                    <div class="vendor-info"><i class="fa-solid fa-briefcase"></i> ${vendor.category || '—'}</div>
-                    <span class="badge ${vendor.status === 'פעיל' ? 'badge-active' : 'badge-inactive'}">${vendor.status}</span>
+                    <div class="card-header">
+                        <div class="vendor-title">
+                            <div class="vendor-name">${vendor.name}</div>
+                            <div class="vendor-id"># ${vendor.id}</div>
+                        </div>
+                        <span class="badge ${vendor.status === 'פעיל' ? 'badge-active' : 'badge-inactive'}">${vendor.status}</span>
+                    </div>
+                    <div class="vendor-body">
+                        <div class="vendor-info"><i class="fa-solid fa-location-dot"></i> עיר: ${vendor.city || '—'}</div>
+                    </div>
                 </div>
                 <div class="admin-actions" style="display: ${isAdmin ? 'flex' : 'none'}">
-                    <button class="btn btn-primary" style="padding:6px 12px; font-size:14px;" onclick="openModal('edit', ${index})"><i class="fa-solid fa-pen"></i> עריכה</button>
-                    <button class="btn btn-danger" style="padding:6px 12px; font-size:14px;" onclick="deleteVendor(${index})"><i class="fa-solid fa-trash"></i> מחיקה</button>
+                    <button class="btn btn-primary" style="padding:6px 12px; font-size:13px; flex:1;" onclick="openModal('edit', ${actualIndex})"><i class="fa-solid fa-pen"></i> עריכה</button>
+                    <button class="btn btn-danger" style="padding:6px 12px; font-size:13px;" onclick="deleteVendor(${actualIndex})"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
             grid.appendChild(card);
         });
     }
 
+    function setFilter(filterType) {
+        currentFilter = filterType;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        if(filterType === 'all') document.getElementById('tab-all').classList.add('active');
+        if(filterType === 'פעיל') document.getElementById('tab-active').classList.add('active');
+        if(filterType === 'לא פעיל') document.getElementById('tab-inactive').classList.add('active');
+        renderVendors();
+    }
+
     function filterVendors() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = vendors.filter(v => 
-            v.name.toLowerCase().includes(query) || 
-            v.id.toString().includes(query) || 
-            (v.category && v.category.toLowerCase().includes(query))
-        );
-        renderVendors(filtered);
+        renderVendors();
     }
 
     function loginAdmin() {
-        const pass = prompt("הקש סיסמת מנהל מערכת:");
+        const pass = prompt("אנא הזן סיסמת מנהל:");
         if (pass === "dror2026") {
             isAdmin = true;
             document.getElementById('adminBanner').style.display = 'flex';
@@ -329,7 +218,7 @@
             document.getElementById('loginBtn').style.display = 'none';
             renderVendors();
         } else if (pass !== null) {
-            alert("סיסמה שגויה!");
+            alert("סיסמה שגויה, אנא נסה שוב.");
         }
     }
 
@@ -342,26 +231,20 @@
     }
 
     function openModal(mode, index = null) {
-        const modal = document.getElementById('vendorModal');
-        modal.style.display = 'flex';
-        
+        document.getElementById('vendorModal').style.display = 'flex';
         if (mode === 'edit') {
-            document.getElementById('modalTitle').innerText = 'עריכת ספק';
+            document.getElementById('modalTitle').innerText = 'עריכת נתוני ספק';
             document.getElementById('editIndex').value = index;
             document.getElementById('formId').value = vendors[index].id;
             document.getElementById('formName').value = vendors[index].name;
-            document.getElementById('formPhone').value = vendors[index].phone;
-            document.getElementById('formEmail').value = vendors[index].email;
-            document.getElementById('formCategory').value = vendors[index].category;
+            document.getElementById('formCity').value = vendors[index].city;
             document.getElementById('formStatus').value = vendors[index].status;
         } else {
-            document.getElementById('modalTitle').innerText = 'הוספת ספק חדש';
+            document.getElementById('modalTitle').innerText = 'הוספת ספק חדש למערכת';
             document.getElementById('editIndex').value = '';
             document.getElementById('formId').value = '';
             document.getElementById('formName').value = '';
-            document.getElementById('formPhone').value = '';
-            document.getElementById('formEmail').value = '';
-            document.getElementById('formCategory').value = '';
+            document.getElementById('formCity').value = '';
             document.getElementById('formStatus').value = 'פעיל';
         }
     }
@@ -375,27 +258,25 @@
         const newVendor = {
             id: document.getElementById('formId').value,
             name: document.getElementById('formName').value,
-            phone: document.getElementById('formPhone').value,
-            email: document.getElementById('formEmail').value,
-            category: document.getElementById('formCategory').value,
+            city: document.getElementById('formCity').value,
             status: document.getElementById('formStatus').value
         };
 
         if (index === '') {
-            vendors.push(newVendor);
+            vendors.unshift(newVendor);
         } else {
             vendors[index] = newVendor;
         }
 
-        localStorage.setItem('vendors', JSON.stringify(vendors));
+        localStorage.setItem('dror_vendors', JSON.stringify(vendors));
         closeModal();
         renderVendors();
     }
 
     function deleteVendor(index) {
-        if (confirm("האם אתה בטוח שברצונך למחוק ספק זה?")) {
+        if (confirm("האם אתה בטוח לחלוטין שברצונך למחוק את הספק הזה מהרשימה?")) {
             vendors.splice(index, 1);
-            localStorage.setItem('vendors', JSON.stringify(vendors));
+            localStorage.setItem('dror_vendors', JSON.stringify(vendors));
             renderVendors();
         }
     }
