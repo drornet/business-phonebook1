@@ -43,19 +43,16 @@
 
         .filter-select { padding: 12px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; background: white; cursor: pointer; }
         
-        /* כפתורי שינוי תצוגה */
         .view-toggle-btns { display: flex; gap: 4px; background: #e2e8f0; padding: 4px; border-radius: 10px; }
         .toggle-btn { padding: 8px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; color: var(--text-muted); }
         .toggle-btn.active { background: white; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
         .stats { margin-bottom: 15px; font-size: 14px; color: var(--text-muted); font-weight: 600; }
         
-        /* תצוגת גריד / כרטיסים */
         .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
         .grid-view .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 18px; box-shadow: 0 2px 4px rgb(0 0 0 / 0.02); display: flex; flex-direction: column; justify-content: space-between; position: relative; transition: transform 0.2s; cursor: pointer; }
         .grid-view .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         
-        /* תצוגת רשימה דחוסה */
         .list-view { display: flex; flex-direction: column; gap: 8px; }
         .list-view .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; cursor: pointer; }
         .list-view .card .vendor-body, .list-view .card .products-tag-container, .list-view .card .review-text { display: none; }
@@ -87,14 +84,12 @@
 
         .admin-actions { display: none; gap: 8px; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; width: 100%; }
 
-        /* מודאלים מעוצבים */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-size: 14px; }
         
-        /* עיצוב לפרופיל ספק מלא */
         .profile-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
         .profile-row strong { color: var(--text-muted); }
 
@@ -215,136 +210,4 @@
 <script>
     let vendors = [];
     let requests = JSON.parse(localStorage.getItem('dror_contact_reqs')) || [];
-    let isAdmin = false;
-    let currentLayout = 'grid';
-    const itemsToShow = 30;
-    let visibleCount = 30;
-
-    // אוטומציית סיווג אזור גיאוגרפי
-    function getRegionByCity(city) {
-        if (!city || city === '—') return 'מרכז';
-        const north = ['חיפה', 'קריות', 'עכו', 'נהריה', 'טבריה', 'צפת', 'עפולה', 'נצרת', 'כרמיאל', 'גליל', 'גולן', 'חדרה', 'נתניה'];
-        const south = ['באר שבע', 'אשדוד', 'אשקלון', 'אילת', 'נתיבות', 'שדרות', 'אופקים', 'ערד', 'קרית גת'];
-        if (north.some(n => city.includes(n))) return 'צפון';
-        if (south.some(s => city.includes(s))) return 'דרום';
-        return 'מרכז';
-    }
-
-    // אוטומציית התאמת אייקון לפי תחום
-    function getIconByGroup(group) {
-        const g = group.toLowerCase();
-        if (g.includes('מחשב') || g.includes('תוכנה') || g.includes('טכנו')) return 'fa-laptop-code';
-        if (g.includes('רכב') || g.includes('הובל') || g.includes('הסע')) return 'fa-truck';
-        if (g.includes('מזון') || g.includes('קייטרינג') || g.includes('אירוע')) return 'fa-utensils';
-        if (g.includes('ניקוי') || g.includes('אחזקה')) return 'fa-broom';
-        if (g.includes('דפוס') || g.includes('נייר') || g.includes('ספר')) return 'fa-print';
-        return 'fa-briefcase';
-    }
-
-    async function loadExcelFromGitHub() {
-        try {
-            const response = await fetch('./ספקים מעודכן.xlsx');
-            if(!response.ok) throw new Error();
-            const arrayBuffer = await response.arrayBuffer();
-            const data = new Uint8Array(arrayBuffer);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet);
-            
-            vendors = jsonData.map(row => {
-                const name = String(row['שם ספק'] || row['שם'] || 'ספק כללי').trim();
-                const city = String(row['עיר'] || '—').trim();
-                const id = String(row['מס.ספק'] || row['מספר ספק'] || '0');
-                const web = String(row['Web Site'] || row['אתר'] || '').trim();
-                
-                return {
-                    id: id,
-                    name: name,
-                    city: city,
-                    phone: String(row['טלפון'] || '').trim(),
-                    email: String(row['e-mail'] || row['אימייל'] || '').trim(),
-                    group: String(row['תחום עיסוק'] || row['תאור סוג ספק'] || 'כללי').trim(),
-                    region: getRegionByCity(city),
-                    dealType: row['סוג עסקה'] || (id % 3 === 0 ? 'שוטף + 30' : id % 3 === 1 ? 'שוטף + 60' : 'נותן שירות'),
-                    products: row['מוצרים'] ? row['מוצרים'].split(',') : ['ציוד והספקה'],
-                    rating: parseInt(row['דירוג']) || 5,
-                    review: row['ביקורת'] || '',
-                    approvedContact: row['איש קשר'] || 'לא הוגדר',
-                    website: web && !web.startsWith('http') ? 'https://' + web : web,
-                    fullAddress: String(row['כתובת'] || '').trim(),
-                    openDate: row['תאריך פתיחה'] || '—'
-                };
-            });
-
-            if(localStorage.getItem('cached_vendors_v4')) {
-                vendors = JSON.parse(localStorage.getItem('cached_vendors_v4'));
-            } else {
-                localStorage.setItem('cached_vendors_v4', JSON.stringify(vendors));
-            }
-            initSystem();
-        } catch (e) {
-            vendors = JSON.parse(localStorage.getItem('cached_vendors_v4')) || [];
-            if(vendors.length > 0) initSystem();
-            else document.getElementById('loadingStatus').innerHTML = "⚠️ יש לוודא שקובץ האקסל נמצא בשרת.";
-        }
-    }
-
-    function initSystem() {
-        document.getElementById('loadingStatus').style.display = 'none';
-        document.getElementById('statsCounter').style.display = 'block';
-        buildCategoryFilter();
-        updateRequestBadge();
-        renderVendors();
-    }
-
-    function buildCategoryFilter() {
-        const categories = [...new Set(vendors.map(v => v.group))].filter(Boolean);
-        const select = document.getElementById('categoryFilter');
-        categories.forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat; opt.innerText = cat; select.appendChild(opt);
-        });
-    }
-
-    function renderVendors(append = false) {
-        const grid = document.getElementById('vendorsGrid');
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const selectedCat = document.getElementById('categoryFilter').value;
-        const selectedReg = document.getElementById('regionFilter').value;
-
-        if (!append) { grid.innerHTML = ''; visibleCount = itemsToShow; }
-
-        let filtered = vendors.filter(v => {
-            const matchesSearch = v.name.toLowerCase().includes(query) || v.id.includes(query) || v.products.some(p => p.toLowerCase().includes(query));
-            const matchesCat = selectedCat === 'all' || v.group === selectedCat;
-            const matchesReg = selectedReg === 'all' || v.region === selectedReg;
-            return matchesSearch && matchesCat && matchesReg;
-        });
-
-        document.getElementById('statsCounter').innerText = `נמצאו ${filtered.length.toLocaleString()} ספקים`;
-        const chunk = filtered.slice(append ? grid.children.length : 0, visibleCount);
-
-        chunk.forEach((vendor) => {
-            const actualIndex = vendors.indexOf(vendor);
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.setAttribute('onclick', `openProfileModal(${actualIndex}, event)`);
-
-            let starsHtml = '⭐'.repeat(vendor.rating);
-            let iconClass = getIconByGroup(vendor.group);
-
-            card.innerHTML = `
-                <div style="pointer-events:none;">
-                    <div class="card-header">
-                        <div style="flex:1;">
-                            <div class="vendor-name"><i class="fa-solid ${iconClass}" style="color:var(--primary); margin-left:6px;"></i>${vendor.name}</div>
-                            <div class="vendor-id">מספר: #${vendor.id}</div>
-                            <div class="rating-stars">${starsHtml}</div>
-                        </div>
-                        <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
-                            <span class="badge badge-deal">${vendor.dealType}</span>
-                            <span class="badge badge-region">${vendor.region}</span>
-                        </div>
-                    </div>
-                    <div class="vendor-body">
-                        <div class="vendor
+    let isAdmin
