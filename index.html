@@ -210,4 +210,287 @@
 <script>
     let vendors = [];
     let requests = JSON.parse(localStorage.getItem('dror_contact_reqs')) || [];
-    let isAdmin
+    let isAdmin = false;
+    let currentLayout = 'grid';
+    const itemsToShow = 30;
+    let visibleCount = 30;
+
+    function safeString(val) {
+        if (val === undefined || val === null) return '';
+        return String(val).trim();
+    }
+
+    function getRegionByCity(city) {
+        if (!city || city === '—') return 'מרכז';
+        const north = ['חיפה', 'קריות', 'עכו', 'נהריה', 'טבריה', 'צפת', 'עפולה', 'נצרת', 'כרמיאל', 'גליל', 'גולן', 'חדרה', 'נתניה'];
+        const south = ['באר שבע', 'אשדוד', 'אשקלון', 'אילת', 'נתיבות', 'שדרות', 'אופקים', 'ערד', 'קרית גת'];
+        if (north.some(n => city.includes(n))) return 'צפון';
+        if (south.some(s => city.includes(s))) return 'דרום';
+        return 'מרכז';
+    }
+
+    function getIconByGroup(group) {
+        const g = group.toLowerCase();
+        if (g.includes('מחשב') || g.includes('תוכנה') || g.includes('טכנו')) return 'fa-laptop-code';
+        if (g.includes('רכב') || g.includes('הובל') || g.includes('הסע')) return 'fa-truck';
+        if (g.includes('מזון') || g.includes('קייטרינג') || g.includes('אירוע')) return 'fa-utensils';
+        if (g.includes('ניקוי') || g.includes('אחזקה')) return 'fa-broom';
+        if (g.includes('דפוס') || g.includes('נייר') || g.includes('ספר')) return 'fa-print';
+        return 'fa-briefcase';
+    }
+
+    async function loadExcelFromGitHub() {
+        try {
+            const response = await fetch('./ספקים מעודכן.xlsx');
+            if(!response.ok) throw new Error();
+            const arrayBuffer = await response.arrayBuffer();
+            const data = new Uint8Array(arrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            
+            vendors = jsonData.map(row => {
+                const name = safeString(row['שם ספק'] || row['שם'] || 'ספק כללי');
+                const city = safeString(row['עיר'] || '—');
+                const id = safeString(row['מס.ספק'] || row['מספר ספק'] || '0');
+                let web = safeString(row['Web Site'] || row['אתר']);
+                if (web && !web.startsWith('http')) web = 'https://' + web;
+                
+                return {
+                    id: id,
+                    name: name,
+                    city: city,
+                    phone: safeString(row['טלפון']),
+                    email: safeString(row['e-mail'] || row['אימייל']),
+                    group: safeString(row['תחום עיסוק'] || row['תאור סוג ספק'] || 'כללי'),
+                    region: getRegionByCity(city),
+                    dealType: row['סוג עסקה'] || (id % 3 === 0 ? 'שוטף + 30' : id % 3 === 1 ? 'שוטף + 60' : 'נותן שירות'),
+                    products: row['מוצרים'] ? safeString(row['מוצרים']).split(',') : ['ציוד והספקה'],
+                    rating: parseInt(row['דירוג']) || 5,
+                    review: safeString(row['ביקורת']),
+                    approvedContact: safeString(row['איש קשר'] || 'לא הוגדר'),
+                    website: web,
+                    fullAddress: safeString(row['כתובת']),
+                    openDate: row['תאריך פתיחה'] ? safeString(row['תאריך פתיחה']) : '—'
+                };
+            });
+
+            if(localStorage.getItem('cached_vendors_v4')) {
+                vendors = JSON.parse(localStorage.getItem('cached_vendors_v4'));
+            } else {
+                localStorage.setItem('cached_vendors_v4', JSON.stringify(vendors));
+            }
+            initSystem();
+        } catch (e) {
+            vendors = JSON.parse(localStorage.getItem('cached_vendors_v4')) || [];
+            if(vendors.length > 0) initSystem();
+            else document.getElementById('loadingStatus').innerHTML = "⚠️ שגיאה בטעינת הקובץ. ודא ש-'ספקים מעודכן.xlsx' נמצא במיקום הנכון.";
+        }
+    }
+
+    function initSystem() {
+        document.getElementById('loadingStatus').style.display = 'none';
+        document.getElementById('statsCounter').style.display = 'block';
+        buildCategoryFilter();
+        updateRequestBadge();
+        renderVendors();
+    }
+
+    function buildCategoryFilter() {
+        const categories = [...new Set(vendors.map(v => v.group))].filter(Boolean);
+        const select = document.getElementById('categoryFilter');
+        categories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat; opt.innerText = cat; select.appendChild(opt);
+        });
+    }
+
+    function renderVendors(append = false) {
+        const grid = document.getElementById('vendorsGrid');
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const selectedCat = document.getElementById('categoryFilter').value;
+        const selectedReg = document.getElementById('regionFilter').value;
+
+        if (!append) { grid.innerHTML = ''; visibleCount = itemsToShow; }
+
+        let filtered = vendors.filter(v => {
+            const matchesSearch = v.name.toLowerCase().includes(query) || v.id.includes(query) || v.products.some(p => p.toLowerCase().includes(query));
+            const matchesCat = selectedCat === 'all' || v.group === selectedCat;
+            const matchesReg = selectedReg === 'all' || v.region === selectedReg;
+            return matchesSearch && matchesCat && matchesReg;
+        });
+
+        document.getElementById('statsCounter').innerText = `נמצאו ${filtered.length.toLocaleString()} ספקים`;
+        const chunk = filtered.slice(append ? grid.children.length : 0, visibleCount);
+
+        chunk.forEach((vendor) => {
+            const actualIndex = vendors.indexOf(vendor);
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.setAttribute('onclick', `openProfileModal(${actualIndex}, event)`);
+
+            let starsHtml = '⭐'.repeat(vendor.rating);
+            let iconClass = getIconByGroup(vendor.group);
+
+            card.innerHTML = `
+                <div style="pointer-events:none;">
+                    <div class="card-header">
+                        <div style="flex:1;">
+                            <div class="vendor-name"><i class="fa-solid ${iconClass}" style="color:var(--primary); margin-left:6px;"></i>${vendor.name}</div>
+                            <div class="vendor-id">מספר: #${vendor.id}</div>
+                            <div class="rating-stars">${starsHtml}</div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                            <span class="badge badge-deal">${vendor.dealType}</span>
+                            <span class="badge badge-region">${vendor.region}</span>
+                        </div>
+                    </div>
+                    <div class="vendor-body">
+                        <div class="vendor-info"><i class="fa-solid fa-location-dot"></i> <strong>עיר:</strong> ${vendor.city}</div>
+                        <div class="vendor-info"><i class="fa-solid fa-user-tie"></i> <strong>איש קשר:</strong> ${vendor.approvedContact}</div>
+                        <div class="products-tag-container">
+                            ${vendor.products.map(p => `<span class="product-tag">${p.trim()}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="action-buttons" onclick="event.stopPropagation();">
+                    <a href="tel:${vendor.phone}" class="action-btn ${!vendor.phone ? 'disabled' : ''}"><i class="fa-solid fa-phone" style="color:var(--success)"></i> חיוג</a>
+                    ${vendor.website ? `<a href="${vendor.website}" target="_blank" class="action-btn"><i class="fa-solid fa-globe" style="color:var(--primary)"></i> אתר</a>` : ''}
+                    <button class="action-btn" onclick="openFeedbackModal(${actualIndex})"><i class="fa-solid fa-star" style="color:var(--warning)"></i> עדכון</button>
+                </div>
+                <div class="admin-actions" style="display: ${isAdmin ? 'flex' : 'none'}" onclick="event.stopPropagation();">
+                    <button class="action-btn" style="background:var(--primary); color:white; width:100%;" onclick="openAdminModal(${actualIndex})">הגדרות מנהל</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        document.getElementById('loadMoreBtn').style.display = grid.children.length < filtered.length ? 'block' : 'none';
+    }
+
+    function loadMore() { visibleCount += itemsToShow; renderVendors(true); }
+    function resetAndFilter() { renderVendors(false); }
+
+    function changeLayout(type) {
+        currentLayout = type;
+        const grid = document.getElementById('vendorsGrid');
+        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        
+        if(type === 'grid') {
+            grid.className = 'grid-view'; document.getElementById('viewGridBtn').classList.add('active');
+        } else {
+            grid.className = 'list-view'; document.getElementById('viewListBtn').classList.add('active');
+        }
+        renderVendors(false);
+    }
+
+    function openProfileModal(index, event) {
+        const vendor = vendors[index];
+        document.getElementById('profTitle').innerText = vendor.name;
+        document.getElementById('profBadge').innerText = vendor.dealType;
+        
+        let wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(vendor.fullAddress || vendor.city)}`;
+
+        document.getElementById('profileDetails').innerHTML = `
+            <div class="profile-row"><strong>מספר ספק / ח.פ:</strong> <span>${vendor.id}</span></div>
+            <div class="profile-row"><strong>תחום עיסוק קבוע:</strong> <span>${vendor.group}</span></div>
+            <div class="profile-row"><strong>עיר:</strong> <span>${vendor.city}</span></div>
+            <div class="profile-row"><strong>כתובת מלאה:</strong> <span>${vendor.fullAddress || 'לא הוגדרה'}</span></div>
+            <div class="profile-row"><strong>איש קשר מאושר:</strong> <span>${vendor.approvedContact}</span></div>
+            <div class="profile-row"><strong>טלפון:</strong> <span>${vendor.phone || 'אין'}</span></div>
+            <div class="profile-row"><strong>אימייל:</strong> <span>${vendor.email || 'אין'}</span></div>
+            <div class="profile-row"><strong>תאריך פתיחה במערכת:</strong> <span>${vendor.openDate}</span></div>
+            <div class="profile-row"><strong>מוצרים רשומים:</strong> <span>${vendor.products.join(', ')}</span></div>
+            <div style="margin-top:15px; display:flex; gap:10px;">
+                <a href="${wazeUrl}" target="_blank" class="action-btn" style="background:#33ccff; color:white; flex:1;"><i class="fa-brands fa-waze"></i> ניווט ב-Waze</a>
+                ${vendor.phone ? `<a href="tel:${vendor.phone}" class="action-btn" style="background:var(--success); color:white; flex:1;"><i class="fa-solid fa-phone"></i> התקשר עכשיו</a>` : ''}
+            </div>
+        `;
+        document.getElementById('vendorProfileModal').style.display = 'flex';
+    }
+    function closeProfileModal() { document.getElementById('vendorProfileModal').style.display = 'none'; }
+    function closeProfileModalOnOutsideClick(e) { if(e.target.id === 'vendorProfileModal') closeProfileModal(); }
+
+    function openFeedbackModal(index) {
+        document.getElementById('feedbackVendorIndex').value = index;
+        document.getElementById('userFeedbackModal').style.display = 'flex';
+    }
+    function closeFeedbackModal() { document.getElementById('userFeedbackModal').style.display = 'none'; }
+
+    function submitFeedback() {
+        const idx = document.getElementById('feedbackVendorIndex').value;
+        const contactName = document.getElementById('newUserContact').value.trim();
+        const contactPhone = document.getElementById('newUserPhone').value.trim();
+        const rating = document.getElementById('userRating').value;
+        const review = document.getElementById('userReview').value.trim();
+
+        vendors[idx].rating = parseInt(rating);
+        if(review) vendors[idx].review = review;
+
+        if(contactName) {
+            requests.push({ id: Date.now(), vendorIndex: idx, vendorName: vendors[idx].name, proposedContact: contactName + (contactPhone ? ` (${contactPhone})` : '') });
+            localStorage.setItem('dror_contact_reqs', JSON.stringify(requests));
+            updateRequestBadge();
+            alert("הבקשה נשלחה לאישור מנהל!");
+        } else {
+            alert("הדירוג עודכן!");
+        }
+        localStorage.setItem('cached_vendors_v4', JSON.stringify(vendors));
+        closeFeedbackModal(); renderVendors(false);
+    }
+
+    function renderRequests() {
+        const container = document.getElementById('requestsGrid'); container.innerHTML = '';
+        document.getElementById('requestsStats').innerText = `ממתינות לאישור: ${requests.length} בקשות`;
+        requests.forEach((req, index) => {
+            const card = document.createElement('div'); card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header"><div><div class="vendor-name">${req.vendorName}</div></div><span class="badge badge-pending">ממתין</span></div>
+                <div class="vendor-body"><p style="padding:8px; background:#f1f5f9; border-radius:6px;">${req.proposedContact}</p></div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button class="action-btn" style="background:var(--success); color:white; flex:1;" onclick="approveContact(${index})">אשר והוסף</button>
+                    <button class="action-btn" style="background:var(--danger); color:white; flex:1;" onclick="rejectContact(${index})">דחה</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function approveContact(index) {
+        const req = requests[index];
+        if(vendors[req.vendorIndex]) vendors[req.vendorIndex].approvedContact = req.proposedContact;
+        requests.splice(index, 1);
+        localStorage.setItem('dror_contact_reqs', JSON.stringify(requests));
+        localStorage.setItem('cached_vendors_v4', JSON.stringify(vendors));
+        updateRequestBadge(); renderRequests();
+    }
+    function rejectContact(index) { requests.splice(index, 1); localStorage.setItem('dror_contact_reqs', JSON.stringify(requests)); updateRequestBadge(); renderRequests(); }
+    function updateRequestBadge() { const badge = document.getElementById('reqCountBadge'); if(requests.length > 0) { badge.innerText = requests.length; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; } }
+
+    function openAdminModal(index) {
+        document.getElementById('adminEditIndex').value = index;
+        document.getElementById('admName').value = vendors[index].name;
+        document.getElementById('admDealType').value = vendors[index].dealType;
+        document.getElementById('admProducts').value = vendors[index].products.join(', ');
+        document.getElementById('admWebsite').value = vendors[index].website;
+        document.getElementById('adminVendorModal').style.display = 'flex';
+    }
+    function closeAdminModal() { document.getElementById('adminVendorModal').style.display = 'none'; }
+    function saveAdminVendor() {
+        const idx = document.getElementById('adminEditIndex').value;
+        vendors[idx].name = document.getElementById('admName').value;
+        vendors[idx].dealType = document.getElementById('admDealType').value;
+        vendors[idx].website = document.getElementById('admWebsite').value;
+        vendors[idx].products = document.getElementById('admProducts').value.split(',').map(p => p.trim());
+        localStorage.setItem('cached_vendors_v4', JSON.stringify(vendors));
+        closeAdminModal(); renderVendors(false);
+    }
+
+    function loginAdmin() { if (prompt("הזן סיסמת מנהל:") === "dror2026") { isAdmin = true; document.getElementById('adminBanner').style.display = 'flex'; document.getElementById('loginBtn').style.display = 'none'; renderVendors(false); } }
+    function logoutAdmin() { isAdmin = false; document.getElementById('adminBanner').style.display = 'none'; document.getElementById('loginBtn').style.display = 'inline-flex'; renderVendors(false); }
+    function switchView(view) { document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); if(view === 'vendors') { document.getElementById('vendorsSection').classList.add('active'); document.getElementById('navVendors').classList.add('active'); } else { document.getElementById('requestsSection').classList.add('active'); document.getElementById('navRequests').classList.add('active'); renderRequests(); } }
+
+    loadExcelFromGitHub();
+</script>
+</body>
+</html>
