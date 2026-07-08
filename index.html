@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ספר ספקים מלא - דרור חינוך</title>
+    <title>מערכת ספקים חכמה - דרור חינוך</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -16,129 +17,119 @@
             --border: #e2e8f0;
             --success: #10b981;
             --danger: #ef4444;
-            --warning: #f59e0b;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding: 20px; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        header { text-align: center; margin-bottom: 30px; padding: 25px; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); border-bottom: 4px solid var(--primary); }
-        header h1 { color: var(--primary); font-size: 32px; margin-bottom: 8px; }
-        header p { color: var(--text-muted); font-size: 16px; }
-
-        .admin-banner { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 14px; border-radius: 12px; margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; font-weight: 600; }
+        header { text-align: center; margin-bottom: 25px; padding: 20px; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); border-bottom: 4px solid var(--primary); }
+        header h1 { color: var(--primary); font-size: 28px; margin-bottom: 5px; }
+        header p { color: var(--text-muted); font-size: 15px; }
         
-        .controls { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center; }
-        .search-box { flex: 1; min-width: 280px; position: relative; }
-        .search-box input { width: 100%; padding: 14px 45px 14px 15px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; outline: none; transition: all 0.3s; }
+        .admin-banner { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 12px; border-radius: 12px; margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; font-weight: 600; }
+        
+        .controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .search-box { flex: 1; min-width: 260px; position: relative; }
+        .search-box input { width: 100%; padding: 12px 45px 12px 15px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; outline: none; transition: all 0.3s; }
         .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 18px; }
+        .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-        .filter-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
         .tab { padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text); transition: all 0.2s; }
         .tab.active { background: var(--primary); color: white; }
 
-        .btn { padding: 12px 24px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .btn { padding: 10px 20px; border: none; border-radius: 12px; font-size: 15px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-admin { background: #64748b; color: white; margin-right: auto; }
         .btn-danger { background: var(--danger); color: white; }
 
-        .stats { margin-bottom: 20px; font-size: 14px; color: var(--text-muted); font-weight: 600; }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 22px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+        .stats { margin-bottom: 15px; font-size: 14px; color: var(--text-muted); font-weight: 600; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
         
-        .card-header { margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
-        .vendor-title { flex: 1; }
-        .vendor-name { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
-        .vendor-id { font-size: 13px; color: var(--text-muted); font-family: monospace; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 18px; box-shadow: 0 2px 4px rgb(0 0 0 / 0.02); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgb(0 0 0 / 0.08); }
         
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .card-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .vendor-name { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.4; }
+        .vendor-id { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        
+        .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
         .badge-active { background: #dcfce7; color: #166534; }
         .badge-inactive { background: #fee2e2; color: #991b1b; }
 
-        .vendor-body { margin-bottom: 15px; }
-        .vendor-info { font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; color: var(--text); }
-        .vendor-info i { color: var(--primary); width: 16px; text-align: center; font-size: 14px; }
+        .vendor-body { margin-bottom: 12px; }
+        .vendor-info { font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+        .vendor-info i { color: var(--primary); width: 14px; text-align: center; }
+        
+        .action-buttons { display: flex; gap: 8px; margin-top: auto; }
+        .action-btn { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: var(--text); transition: background 0.2s; }
+        .action-btn:hover { background: #e2e8f0; }
+        .action-btn.disabled { pointer-events: none; opacity: 0.4; background: #f1f5f9; }
 
-        .admin-actions { display: none; gap: 10px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
+        .admin-actions { display: none; gap: 8px; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
-        .modal-content { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
-        .form-group input, .form-group select { width: 100%; padding: 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; }
-        .form-group input:focus { border-color: var(--primary); }
+        .modal-content { background: white; padding: 20px; border-radius: 16px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-size: 14px; }
         
-        #loadMoreBtn { margin: 30px auto; display: none; }
+        #loadMoreBtn { margin: 25px auto; display: none; }
+        .loading-spinner { text-align: center; padding: 30px; font-size: 18px; color: var(--primary); font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>ספר ספקים דיגיטלי מלא</h1>
-        <p>מערכת לניהול וסינון מהיר של כל אלפי ספקי דרור חינוך</p>
+        <h1>ספר ספקים אוטומטי - דרור חינוך</h1>
+        <p>מערכת חכמה המסננת ומנהלת את כל מאגר הספקים בזמן אמת</p>
     </header>
 
     <div class="admin-banner" id="adminBanner">
-        <span><i class="fa-solid fa-user-shield"></i> מצב מנהל פעיל - יש לך הרשאה מלאה לניהול המאגר.</span>
-        <button class="btn btn-danger" onclick="logoutAdmin()" style="padding: 6px 12px; font-size: 14px;">יציאה</button>
+        <span><i class="fa-solid fa-user-shield"></i> מצב מנהל פעיל - האוטומציות והעריכות פתוחות בפניך.</span>
+        <button class="btn btn-danger" onclick="logoutAdmin()" style="padding: 5px 10px; font-size: 13px;">יציאה</button>
     </div>
 
     <div class="controls">
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchInput" placeholder="חפש לפי שם ספק, מספר ח.פ, עיר או תחום עיסוק..." oninput="resetAndFilter()">
+            <input type="text" id="searchInput" placeholder="חיפוש מהיר לפי שם ספק, ח.פ, עיר או קבוצה..." oninput="resetAndFilter()">
         </div>
         <button class="btn btn-primary" id="addBtn" style="display:none;" onclick="openModal('add')"><i class="fa-solid fa-plus"></i> הוספת ספק</button>
         <button class="btn btn-admin" id="loginBtn" onclick="loginAdmin()"><i class="fa-solid fa-lock"></i> ניהול מערכת</button>
     </div>
 
-    <div class="filter-tabs">
+    <div class="filter-tabs" id="groupFilters">
         <button class="tab active" id="tab-all" onclick="setFilter('all')">כל הספקים</button>
-        <button class="tab" id="tab-active" onclick="setFilter('פעיל')">ספקים פעילים</button>
+        <button class="tab" id="tab-active" onclick="setFilter('פעיל')">פעילים</button>
         <button class="tab" id="tab-inactive" onclick="setFilter('לא פעיל')">לא פעילים</button>
     </div>
 
-    <div class="stats" id="statsCounter">טוען את מאגר הספקים המלא...</div>
+    <div id="loadingStatus" class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> קורא את קובץ האקסל המלא ומפעיל אוטומציות...</div>
+    <div class="stats" id="statsCounter" style="display:none;"></div>
     <div class="grid" id="vendorsGrid"></div>
     
-    <button class="btn btn-primary" id="loadMoreBtn" onclick="loadMore()">טען ספקים נוספים...</button>
+    <button class="btn btn-primary" id="loadMoreBtn" onclick="loadMore()">טען עוד ספקים...</button>
 </div>
 
-<!-- Modal הוספה / עריכה -->
 <div class="modal" id="vendorModal">
     <div class="modal-content">
-        <h3 id="modalTitle" style="margin-bottom: 20px; color: var(--primary);">הוספת ספק חדש</h3>
+        <h3 id="modalTitle" style="margin-bottom: 15px; color: var(--primary);">הוספת ספק</h3>
         <input type="hidden" id="editIndex">
-        <div class="form-group">
-            <label>מספר ספק / ח.פ</label>
-            <input type="text" id="formId">
-        </div>
-        <div class="form-group">
-            <label>שם ספק</label>
-            <input type="text" id="formName">
-        </div>
-        <div class="form-group">
-            <label>עיר / מיקום</label>
-            <input type="text" id="formCity">
-        </div>
-        <div class="form-group">
-            <label>תחום עיסוק / קבוצה</label>
-            <input type="text" id="formGroup" placeholder="לדוגמא: אלקטרוניקה, מזון, ציוד משרדי...">
-        </div>
+        <div class="form-group"><label>מספר ספק</label><input type="text" id="formId"></div>
+        <div class="form-group"><label>שם ספק</label><input type="text" id="formName"></div>
+        <div class="form-group"><label>עיר</label><input type="text" id="formCity"></div>
+        <div class="form-group"><label>טלפון</label><input type="text" id="formPhone"></div>
+        <div class="form-group"><label>אימייל</label><input type="text" id="formEmail"></div>
+        <div class="form-group"><label>תחום עיסוק / סוג</label><input type="text" id="formGroup"></div>
         <div class="form-group">
             <label>סטטוס</label>
-            <select id="formStatus">
-                <option value="פעיל">פעיל</option>
-                <option value="לא פעיל">לא פעיל</option>
-            </select>
+            <select id="formStatus"><option value="פעיל">פעיל</option><option value="לא פעיל">לא פעיל</option></select>
         </div>
-        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:25px;">
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
             <button class="btn" onclick="closeModal()">ביטול</button>
             <button class="btn btn-primary" onclick="saveVendor()">שמירה</button>
         </div>
@@ -146,126 +137,169 @@
 </div>
 
 <script>
-    // הנתונים המלאים ישולבו כאן מטעינת קובץ האקסל
-    // כאן נמצאים המערכים המורחבים של קרוב ל-4000 שורות בצורה דינמית
-    let baseVendors = [];
-    
-    // יצירת סימולציית דאטה רחבה כדי לבדוק את יציבות הדפדפן לפני החלפת המאגר הסופי בקובץ
-    function generateFullDatabase() {
-        const sampleNames = ["ויסנס טכנולוגיות בע\"מ", "בורג המפרץ", "באולינג רמת גן", "טומגרין", "דפוס בארי", "אלקטרה מוצרי צריכה", "שופרסל בע\"מ", "סונול ישראל", "תנובה", "אופיס דיפו", "מטריקס מערכות", "פז חברה לבנייה", "אסם השקעות", "מלונות פתאל", "בזק בינלאומי"];
-        const cities = ["תל אביב - יפו", "חיפה", "ירושלים", "באר שבע", "ראשון לציון", "פתח תקווה", "נתניה", "אשדוד", "חולון", "רמת גן"];
-        const categories = ["טכנולוגיה ומחשוב", "אספקת ציוד", "רווחה ואירועים", "חומרי בניין", "דפוס והפקה", "מזון והסעדה", "אנרגיה ודלק", "תקשורת"];
-        
-        let data = [];
-        // הכנסת הספקים הידועים קודם
-        data.push({ id: "777043", name: "ויסנס טכנולוגיות בע\"מ", city: "נתניה", group: "טכנולוגיה ומחשוב", status: "לא פעיל" });
-        data.push({ id: "77706", name: "בורג המפרץ", city: "מפרץ חיפה", group: "חומרי בניין", status: "לא פעיל" });
-        data.push({ id: "77707", name: "באולינג רמת גן", city: "רמת גן", group: "רווחה ואירועים", status: "לא פעיל" });
-        data.push({ id: "78862", name: "טומגרין", city: "באר שבע", group: "אספקת ציוד", status: "לא פעיל" });
-
-        // ייצור אוטומטי של שאר 3,900+ הספקים מהקובץ
-        for (let i = 10000; i < 13950; i++) {
-            const nameRand = sampleNames[Math.floor(Math.random() * sampleNames.length)];
-            data.push({
-                id: i.toString(),
-                name: nameRand + " (" + i + ")",
-                city: cities[Math.floor(Math.random() * cities.length)],
-                group: categories[Math.floor(Math.random() * categories.length)],
-                status: Math.random() > 0.15 ? "פעיל" : "לא פעיל"
-            });
-        }
-        return data;
-    }
-
-    let vendors = JSON.parse(localStorage.getItem('dror_vendors_full')) || generateFullDatabase();
+    let vendors = [];
     let isAdmin = false;
     let currentFilter = 'all';
-    let itemsToShow = 30; // כמות ספקים ראשונית לתצוגה בשביל מהירות מירבית
+    const itemsToShow = 35;
+    let visibleCount = 35;
+
+    // הגנה מפני שגיאות toString() על ערכים ריקים או לא תקינים
+    function safeStr(val) {
+        if (val === undefined || val === null) return '';
+        return String(val).trim();
+    }
+
+    async function loadExcelFromGitHub() {
+        try {
+            const response = await fetch('./ספקים מעודכן.xlsx');
+            if(!response.ok) throw new Error("קובץ האקסל לא נמצא במאגר");
+            
+            const arrayBuffer = await response.arrayBuffer();
+            const data = new Uint8Array(arrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            
+            // מיפוי מוגן ובטוח שמונע קריסות על שורות ריקות
+            vendors = jsonData.map(row => {
+                const id = safeStr(row['מס.ספק'] || row['מספר ספק']);
+                const name = safeStr(row['שם ספק'] || 'ספק ללא שם');
+                const city = safeStr(row['עיר'] || row['עיר ומדינה'] || '—');
+                const phone = safeStr(row['טלפון']);
+                const email = safeStr(row['e-mail'] || row['אימייל']);
+                const group = safeStr(row['תחום עיסוק'] || row['תאור סוג ספק'] || 'כללי');
+                let status = safeStr(row['סטטוס']);
+                
+                if (!status) {
+                    status = name.includes('לא פעיל') ? 'לא פעיל' : 'פעיל';
+                }
+
+                return { id, name, city, phone, email, group, status };
+            }).filter(v => v.id !== '' || v.name !== 'ספק ללא שם'); // סינון שורות ריקות לחלוטין באקסל
+
+            localStorage.setItem('cached_vendors_v2', JSON.stringify(vendors));
+            initSystem();
+
+        } catch (error) {
+            console.log("טוען מגיבוי...", error);
+            vendors = JSON.parse(localStorage.getItem('cached_vendors_v2')) || [];
+            if(vendors.length > 0) initSystem();
+            else document.getElementById('loadingStatus').innerHTML = "⚠️ שגיאה בקריאת הקובץ. אנא וודא שקובץ האקסל קיים ב-GitHub בשם המדויק: 'ספקים מעודכן.xlsx'";
+        }
+    }
+
+    function initSystem() {
+        document.getElementById('loadingStatus').style.display = 'none';
+        document.getElementById('statsCounter').style.display = 'block';
+        buildGroupFilters();
+        renderVendors();
+    }
+
+    function buildGroupFilters() {
+        // שליפת 5 הקבוצות הנפוצות ביותר באקסל בצורה אוטומטית
+        const counts = {};
+        vendors.forEach(v => { if(v.group && v.group !== '—' && v.group !== 'כללי') counts[v.group] = (counts[v.group] || 0) + 1; });
+        const sortedGroups = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).slice(0, 5);
+        
+        const container = document.getElementById('groupFilters');
+        sortedGroups.forEach(group => {
+            const btn = document.createElement('button');
+            btn.className = 'tab';
+            btn.id = 'tab-' + group;
+            btn.innerText = group;
+            btn.onclick = () => setFilter(group);
+            container.appendChild(btn);
+        });
+    }
 
     function renderVendors(append = false) {
         const grid = document.getElementById('vendorsGrid');
         const query = document.getElementById('searchInput').value.toLowerCase();
         
-        if (!append) {
-            grid.innerHTML = '';
-        }
+        if (!append) { grid.innerHTML = ''; visibleCount = itemsToShow; }
 
         let filtered = vendors.filter(v => {
             const matchesSearch = v.name.toLowerCase().includes(query) || 
-                                  v.id.toString().includes(query) || 
-                                  (v.city && v.city.toLowerCase().includes(query)) ||
-                                  (v.group && v.group.toLowerCase().includes(query));
+                                  v.id.toLowerCase().includes(query) || 
+                                  v.city.toLowerCase().includes(query) ||
+                                  v.group.toLowerCase().includes(query);
             
-            const matchesTab = currentFilter === 'all' || v.status === currentFilter;
+            let matchesTab = false;
+            if (currentFilter === 'all') matchesTab = true;
+            else if (currentFilter === 'פעיל' || currentFilter === 'לא פעיל') matchesTab = (v.status === currentFilter);
+            else matchesTab = (v.group === currentFilter);
+
             return matchesSearch && matchesTab;
         });
 
-        document.getElementById('statsCounter').innerText = `נמצאו ${filtered.length.toLocaleString()} ספקים מתוך המאגר המלא`;
+        document.getElementById('statsCounter').innerText = `נמצאו ${filtered.length.toLocaleString()} ספקים במערכת`;
 
-        const chunk = filtered.slice(append ? grid.children.length : 0, (append ? grid.children.length : 0) + itemsToShow);
+        const chunk = filtered.slice(append ? grid.children.length : 0, visibleCount);
 
         chunk.forEach((vendor) => {
             const actualIndex = vendors.indexOf(vendor);
             const card = document.createElement('div');
             card.className = 'card';
+            
+            const hasPhone = vendor.phone && vendor.phone !== '—' && vendor.phone.length > 3;
+            const hasEmail = vendor.email && vendor.email !== '—' && vendor.email.includes('@');
+
             card.innerHTML = `
                 <div>
                     <div class="card-header">
-                        <div class="vendor-title">
+                        <div style="flex:1;">
                             <div class="vendor-name">${vendor.name}</div>
-                            <div class="vendor-id">מספר ספק: # ${vendor.id}</div>
+                            <div class="vendor-id">מספר ספק: #${vendor.id}</div>
                         </div>
                         <span class="badge ${vendor.status === 'פעיל' ? 'badge-active' : 'badge-inactive'}">${vendor.status}</span>
                     </div>
                     <div class="vendor-body">
-                        <div class="vendor-info"><i class="fa-solid fa-location-dot"></i> <strong>מיקום:</strong> ${vendor.city || '—'}</div>
-                        <div class="vendor-info"><i class="fa-solid fa-layer-group"></i> <strong>תחום/קבוצה:</strong> ${vendor.group || 'כללי'}</div>
+                        <div class="vendor-info"><i class="fa-solid fa-location-dot"></i> <strong>עיר:</strong> ${vendor.city || '—'}</div>
+                        <div class="vendor-info"><i class="fa-solid fa-layer-group"></i> <strong>תחום:</strong> ${vendor.group || 'כללי'}</div>
                     </div>
                 </div>
+                <div class="action-buttons">
+                    <a href="tel:${vendor.phone}" class="action-btn ${!hasPhone ? 'disabled' : ''}"><i class="fa-solid fa-phone" style="color:var(--success)"></i> חיוג</a>
+                    <a href="mailto:${vendor.email}" class="action-btn ${!hasEmail ? 'disabled' : ''}"><i class="fa-solid fa-envelope" style="color:var(--primary)"></i> מייל</a>
+                </div>
                 <div class="admin-actions" style="display: ${isAdmin ? 'flex' : 'none'}">
-                    <button class="btn btn-primary" style="padding:6px 12px; font-size:13px; flex:1;" onclick="openModal('edit', ${actualIndex})"><i class="fa-solid fa-pen"></i> עריכה</button>
-                    <button class="btn btn-danger" style="padding:6px 12px; font-size:13px;" onclick="deleteVendor(${actualIndex})"><i class="fa-solid fa-trash"></i></button>
+                    <button class="btn btn-primary" style="padding:6px; font-size:12px; flex:1;" onclick="openModal('edit', ${actualIndex})"><i class="fa-solid fa-pen"></i> עריכה</button>
+                    <button class="btn btn-danger" style="padding:6px 10px; font-size:12px;" onclick="deleteVendor(${actualIndex})"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
             grid.appendChild(card);
         });
 
-        // הצגת כפתור טעינה נוספת במידה ויש עוד תוצאות
-        const loadMoreBtn = document.getElementById('loadMoreBtn');
-        if (grid.children.length < filtered.length) {
-            loadMoreBtn.style.display = 'block';
-        } else {
-            loadMoreBtn.style.display = 'none';
-        }
+        document.getElementById('loadMoreBtn').style.display = grid.children.length < filtered.length ? 'block' : 'none';
     }
 
-    function loadMore() {
-        renderVendors(true);
-    }
-
-    function resetAndFilter() {
-        renderVendors(false);
-    }
-
-    function setFilter(filterType) {
-        currentFilter = filterType;
+    function loadMore() { visibleCount += itemsToShow; renderVendors(true); }
+    function resetAndFilter() { renderVendors(false); }
+    
+    function setFilter(type) {
+        currentFilter = type;
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        if(filterType === 'all') document.getElementById('tab-all').classList.add('active');
-        if(filterType === 'פעיל') document.getElementById('tab-active').classList.add('active');
-        if(filterType === 'לא פעיל') document.getElementById('tab-inactive').classList.add('active');
+        if (type === 'all') document.getElementById('tab-all').classList.add('active');
+        else if (type === 'פעיל') document.getElementById('tab-active').classList.add('active');
+        else if (type === 'לא פעיל') document.getElementById('tab-inactive').classList.add('active');
+        else {
+            const activeTab = document.getElementById('tab-' + type);
+            if(activeTab) activeTab.classList.add('active');
+        }
         renderVendors(false);
     }
 
     function loginAdmin() {
-        const pass = prompt("אנא הזן סיסמת מנהל:");
-        if (pass === "dror2026") {
+        if (prompt("הזן סיסמת מנהל:") === "dror2026") {
             isAdmin = true;
             document.getElementById('adminBanner').style.display = 'flex';
             document.getElementById('addBtn').style.display = 'inline-flex';
             document.getElementById('loginBtn').style.display = 'none';
             renderVendors(false);
-        } else if (pass !== null) {
-            alert("סיסמה שגויה, אנא נסה שוב.");
+        } else {
+            alert("סיסמה שגויה!");
         }
     }
 
@@ -280,59 +314,54 @@
     function openModal(mode, index = null) {
         document.getElementById('vendorModal').style.display = 'flex';
         if (mode === 'edit') {
-            document.getElementById('modalTitle').innerText = 'עריכת נתוני ספק';
             document.getElementById('editIndex').value = index;
             document.getElementById('formId').value = vendors[index].id;
             document.getElementById('formName').value = vendors[index].name;
             document.getElementById('formCity').value = vendors[index].city;
-            document.getElementById('formGroup').value = vendors[index].group || '';
+            document.getElementById('formPhone').value = vendors[index].phone;
+            document.getElementById('formEmail').value = vendors[index].email;
+            document.getElementById('formGroup').value = vendors[index].group;
             document.getElementById('formStatus').value = vendors[index].status;
         } else {
-            document.getElementById('modalTitle').innerText = 'הוספת ספק חדש למערכת';
             document.getElementById('editIndex').value = '';
             document.getElementById('formId').value = '';
             document.getElementById('formName').value = '';
             document.getElementById('formCity').value = '';
+            document.getElementById('formPhone').value = '';
+            document.getElementById('formEmail').value = '';
             document.getElementById('formGroup').value = '';
             document.getElementById('formStatus').value = 'פעיל';
         }
     }
 
-    function closeModal() {
-        document.getElementById('vendorModal').style.display = 'none';
-    }
+    function closeModal() { document.getElementById('vendorModal').style.display = 'none'; }
 
     function saveVendor() {
         const index = document.getElementById('editIndex').value;
-        const newVendor = {
+        const vData = {
             id: document.getElementById('formId').value,
             name: document.getElementById('formName').value,
             city: document.getElementById('formCity').value,
+            phone: document.getElementById('formPhone').value,
+            email: document.getElementById('formEmail').value,
             group: document.getElementById('formGroup').value,
             status: document.getElementById('formStatus').value
         };
-
-        if (index === '') {
-            vendors.unshift(newVendor);
-        } else {
-            vendors[index] = newVendor;
-        }
-
-        localStorage.setItem('dror_vendors_full', JSON.stringify(vendors));
+        if(index === '') vendors.unshift(vData); else vendors[index] = vData;
+        localStorage.setItem('cached_vendors_v2', JSON.stringify(vendors));
         closeModal();
         renderVendors(false);
     }
 
     function deleteVendor(index) {
-        if (confirm("האם אתה בטוח לחלוטין שברצונך למחוק את הספק הזה מהרשימה?")) {
-            vendors.splice(index, 1);
-            localStorage.setItem('dror_vendors_full', JSON.stringify(vendors));
-            renderVendors(false);
+        if(confirm("האם אתה בטוח שברצונך למחוק ספק זה?")) { 
+            vendors.splice(index,1); 
+            localStorage.setItem('cached_vendors_v2', JSON.stringify(vendors)); 
+            renderVendors(false); 
         }
     }
 
-    // הפעלה ראשונית של המערכת
-    renderVendors(false);
+    loadExcelFromGitHub();
 </script>
 </body>
 </html>
