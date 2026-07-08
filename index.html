@@ -2,566 +2,405 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ספר ספקים דיגיטלי</title>
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ספר ספקים - דרור חינוך</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             --primary: #2563eb;
-            --primary-light: #dbeafe;
-            --text-main: #1e293b;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
             --text-muted: #64748b;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-            --radius: 16px;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Assistant', sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: var(--bg-gradient);
-            background-attachment: fixed;
-            min-height: 100vh;
-            color: var(--text-main);
-            padding: 20px 15px 40px 15px;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
         }
 
-        .app-container {
-            max-width: 500px;
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
         }
 
-        /* כותרת האפליקציה */
         header {
             text-align: center;
-            margin-bottom: 25px;
-            padding: 10px 0;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
         }
 
         header h1 {
+            color: var(--primary);
             font-size: 28px;
-            font-weight: 700;
-            color: #1e3a8a;
-            letter-spacing: -0.5px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         header p {
-            font-size: 14px;
             color: var(--text-muted);
         }
 
-        /* סרגל חיפוש */
-        .search-box {
-            background: var(--card-bg);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
+        .controls {
             display: flex;
-            align-items: center;
-            gap: 12px;
+            gap: 15px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
-        .search-box i {
-            color: var(--text-muted);
-            font-size: 18px;
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
         }
 
         .search-box input {
-            border: none;
-            outline: none;
-            background: transparent;
             width: 100%;
-            font-size: 16px;
-            color: var(--text-main);
-        }
-
-        /* קטגוריות מהירות */
-        .categories {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            scrollbar-width: none;
-        }
-        .categories::-webkit-scrollbar { display: none; }
-
-        .chip {
-            background: var(--card-bg);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            transition: all 0.2s ease;
-            color: var(--text-muted);
-        }
-
-        .chip.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        /* רשימת כרטיסיות ספקים */
-        .vendors-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .vendor-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .vendor-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 5px;
-            height: 100%;
-            background: var(--primary);
-        }
-
-        .vendor-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .vendor-name {
-            font-size: 19px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .vendor-id {
-            font-size: 11px;
-            color: var(--text-muted);
-            background: var(--primary-light);
-            color: var(--primary);
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-top: 4px;
-            display: inline-block;
-        }
-
-        .vendor-tag {
-            font-size: 12px;
-            background: #f1f5f9;
-            color: #475569;
-            padding: 4px 10px;
+            padding: 12px 45px 12px 15px;
+            border: 1px solid var(--border);
             border-radius: 12px;
-            font-weight: 600;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
         }
 
-        .vendor-info-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #334155;
-            margin-top: 6px;
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .vendor-info-row i {
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             color: var(--text-muted);
-            width: 16px;
-            text-align: center;
-        }
-
-        /* דירוג כוכבים */
-        .rating-summary {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #f1f5f9;
-        }
-
-        .stars {
-            color: #f59e0b;
-            font-size: 14px;
-        }
-
-        .rating-text {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        /* כפתורי פעולה */
-        .card-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
         }
 
         .btn {
-            flex: 1;
-            padding: 10px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
+            border-radius: 12px;
+            font-size: 16px;
             cursor: pointer;
-            display: flex;
+            font-weight: 600;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
-            transition: all 0.2s ease;
-            text-decoration: none;
+            transition: all 0.2s;
         }
 
-        .btn-call {
-            background: #10b981;
-            color: white;
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-admin { background: #64748b; color: white; margin-right: auto; }
+        .btn-danger { background: var(--danger); color: white; }
+
+        .admin-banner {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .btn-review {
-            background: #e2e8f0;
-            color: var(--text-main);
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
         }
 
-        /* חלונית ביקורת (Modal) */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(4px);
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-header {
+            margin-bottom: 15px;
+        }
+
+        .vendor-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .vendor-id {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .vendor-info {
+            font-size: 14px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            padding: 15px;
+            gap: 8px;
         }
 
-        .modal.active {
-            opacity: 1;
-            pointer-events: auto;
+        .vendor-info i { color: var(--primary); width: 16px; text-align: center; }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .badge-active { background: #dcfce7; color: #166534; }
+        .badge-inactive { background: #fee2e2; color: #991b1b; }
+
+        .admin-actions {
+            display: none;
+            gap: 10px;
+            margin-top: 15px;
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center; justify-content: center;
+            z-index: 1000;
         }
 
         .modal-content {
-            background: white;
-            border-radius: var(--radius);
-            width: 100%;
-            max-width: 400px;
-            padding: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
+            background: white; padding: 25px; border-radius: 16px;
+            width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
-        .modal.active .modal-content {
-            transform: scale(1);
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
         }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #475569;
-        }
-
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 15px;
-            outline: none;
-        }
-
-        .star-rating-input {
-            display: flex;
-            gap: 8px;
-            font-size: 24px;
-            color: #cbd5e1;
-            cursor: pointer;
-            margin: 10px 0;
-        }
-
-        .star-rating-input i.active {
-            color: #f59e0b;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-submit { background: var(--primary); color: white; }
-        .btn-cancel { background: #f1f5f9; color: var(--text-main); }
     </style>
 </head>
 <body>
 
-<div class="app-container">
+<div class="container">
     <header>
         <h1>ספר ספקים דיגיטלי</h1>
-        <p>מערכת חכמה ומודרנית לניהול ודירוג ספקים</p>
+        <p>מערכת חכמה ומודרנית לניהול ודירוג ספקי דרור חינוך</p>
     </header>
 
-    <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" placeholder="חפש לפי שם, עיר, קטגוריה או ח"פ...">
+    <div class="admin-banner" id="adminBanner">
+        <span><i class="fa-solid fa-user-shield"></i> מצב ניהול פעיל - באפשרותך להוסיף, לערוך ולמחוק ספקים.</span>
+        <button class="btn btn-danger" onclick="logoutAdmin()" style="padding: 6px 12px; font-size: 14px;">יציאה</button>
     </div>
 
-    <div class="categories" id="categoryChips">
-        <div class="chip active" onclick="filterCategory('הכל')">הכל ✨</div>
-        <div class="chip" onclick="filterCategory('כללי')">כללי 📦</div>
-        <div class="chip" onclick="filterCategory('הסעות וטיולים')">הסעות וטיולים 🚌</div>
-        <div class="chip" onclick="filterCategory('מחשוב וטכנולוגיה')">מחשוב וטכנולוגיה 💻</div>
-        <div class="chip" onclick="filterCategory('תרבות ואירועים')">תרבות ואירועים 🎭</div>
-    </div>
-
-    <div class="vendors-list" id="vendorsContainer">
+    <div class="controls">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="חפש לפי שם ספק, מספר או תחום עיסוק..." oninput="filterVendors()">
         </div>
+        <button class="btn btn-primary" id="addBtn" style="display:none;" onclick="openModal('add')"><i class="fa-solid fa-plus"></i> הוספת ספק</button>
+        <button class="btn btn-admin" id="loginBtn" onclick="loginAdmin()"><i class="fa-solid fa-lock"></i> ניהול מערכת</button>
+    </div>
+
+    <div class="grid" id="vendorsGrid"></div>
 </div>
 
-<div class="modal" id="reviewModal">
+<!-- Modal הוספה / עריכה -->
+<div class="modal" id="vendorModal">
     <div class="modal-content">
-        <div class="modal-title" id="modalVendorName">הוספת חוות דעת</div>
-        
+        <h3 id="modalTitle" style="margin-bottom: 20px;">הוספת ספק חדש</h3>
+        <input type="hidden" id="editIndex">
         <div class="form-group">
-            <label>שם איש הצוות / המורה</label>
-            <input type="text" id="teacherNameInput" placeholder="הכנס את שמך">
+            <label>מספר ספק</label>
+            <input type="text" id="formId">
         </div>
-
         <div class="form-group">
-            <label>דירוג כוכבים</label>
-            <div class="star-rating-input" id="starRatingInput">
-                <i class="fa-solid fa-star" data-value="1"></i>
-                <i class="fa-solid fa-star" data-value="2"></i>
-                <i class="fa-solid fa-star" data-value="3"></i>
-                <i class="fa-solid fa-star" data-value="4"></i>
-                <i class="fa-solid fa-star" data-value="5"></i>
-            </div>
+            <label>שם ספק</label>
+            <input type="text" id="formName">
         </div>
-
         <div class="form-group">
-            <label>חוות דעת והערות</label>
-            <textarea id="commentInput" rows="3" placeholder="איך היה השירות? האם הגיעו בזמן?"></textarea>
+            <label>טלפון</label>
+            <input type="text" id="formPhone">
         </div>
-
-        <div class="modal-actions">
-            <button class="btn btn-submit" onclick="submitReview()">שמור חוות דעת</button>
-            <button class="btn btn-cancel" onclick="closeModal()">ביטול</button>
+        <div class="form-group">
+            <label>אימייל</label>
+            <input type="email" id="formEmail">
+        </div>
+        <div class="form-group">
+            <label>תחום עיסוק</label>
+            <input type="text" id="formCategory">
+        </div>
+        <div class="form-group">
+            <label>סטטוס</label>
+            <select id="formStatus">
+                <option value="פעיל">פעיל</option>
+                <option value="לא פעיל">לא פעיל</option>
+            </select>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            <button class="btn" onclick="closeModal()">ביטול</button>
+            <button class="btn btn-primary" onclick="saveVendor()">שמירה</button>
         </div>
     </div>
 </div>
 
 <script>
-    // מאגר המידע הרשמי של הספקים מהפריוריטי
-    const initialVendors = [
-        { id: "200007", name: 'מיקוש מילן בע"מ', city: 'קריית-אתא', phone: '052-3737443', category: 'כללי' },
-        { id: "200018", name: 'א.ס. לב הובלה ואחסנה בע"מ', city: 'חולון', phone: '1800350305', category: 'הסעות וטיולים' },
-        { id: "372390", name: 'שירין פתרונות מחשוב בע"מ', city: 'בני ברק', phone: '0779555666', category: 'מחשוב וטכנולוגיה' },
-        { id: "671002", name: 'עמותת הנוער העובד והלומד', city: 'תל אביב', phone: '03-5125124', category: 'תרבות ואירועים' },
-        { id: "722050", name: 'הום סנטר בע"מ', city: 'אור יהודה', phone: '03-6341175', category: 'כללי' }
+    const defaultVendors = [
+        { id: "000", name: "ספק כללי", phone: "—", email: "—", category: "כללי", status: "פעיל" },
+        { id: "001", name: "מלגות", phone: "—", email: "—", category: "ייחודי", status: "פעיל" },
+        { id: "200001", name: "כל", phone: "—", email: "—", category: "כללי", status: "פעיל" },
+        { id: "200002", name: "722448", phone: "—", email: "—", category: "—", status: "לא פעיל" },
+        { id: "200003", name: "770015", phone: "—", email: "—", category: "—", status: "פעיל" }
     ];
 
-    let vendorsData = [];
-    let currentCategory = 'הכל';
-    let activeVendorIdForReview = null;
-    let selectedRatingValue = 0;
+    let vendors = JSON.parse(localStorage.getItem('vendors')) || defaultVendors;
+    let isAdmin = false;
 
-    // אתחול וטעינת הנתונים
-    function initApp() {
-        const savedReviews = JSON.parse(localStorage.getItem('vendor_reviews')) || {};
-        
-        vendorsData = initialVendors.map(vendor => {
-            const reviews = savedReviews[vendor.id] || [];
-            const avgRating = reviews.length > 0 
-                ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) 
-                : 0;
-            return {
-                ...vendor,
-                reviews: reviews,
-                average_rating: parseFloat(avgRating)
-            };
-        });
+    function renderVendors(dataToRender = vendors) {
+        const grid = document.getElementById('vendorsGrid');
+        grid.innerHTML = '';
 
-        renderVendors();
-    }
-
-    // הצגת הספקים
-    function renderVendors() {
-        const container = document.getElementById('vendorsContainer');
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        container.innerHTML = '';
-
-        const filtered = vendorsData.filter(v => {
-            const matchesCategory = currentCategory === 'הכל' || v.category === currentCategory;
-            const matchesSearch = v.name.toLowerCase().includes(searchTerm) || 
-                                  v.city.toLowerCase().includes(searchTerm) || 
-                                  v.id.includes(searchTerm);
-            return matchesCategory && matchesSearch;
-        });
-
-        if(filtered.length === 0) {
-            container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">לא נמצאו ספקים תואמים 🔍</div>`;
-            return;
-        }
-
-        filtered.forEach(v => {
+        dataToRender.forEach((vendor, index) => {
             const card = document.createElement('div');
-            card.className = 'vendor-card';
-            
-            let starsHtml = '';
-            for (let i = 1; i <= 5; i++) {
-                if(i <= Math.round(v.average_rating)) {
-                    starsHtml += `<i class="fa-solid fa-star"></i>`;
-                } else {
-                    starsHtml += `<i class="fa-regular fa-star"></i>`;
-                }
-            }
-
+            card.className = 'card';
             card.innerHTML = `
-                <div class="vendor-header">
-                    <div>
-                        <div class="vendor-name">${v.name}</div>
-                        <div class="vendor-id">ח"פ / מספר ספק: ${v.id}</div>
-                    </div>
-                    <span class="vendor-tag">${v.category}</span>
+                <div class="card-header">
+                    <div class="vendor-name">${vendor.name}</div>
+                    <div class="vendor-id">מספר ספק: ${vendor.id}</div>
                 </div>
-                <div class="vendor-info-row"><i class="fa-solid fa-location-dot"></i> <span>עיר: ${v.city}</span></div>
-                <div class="vendor-info-row"><i class="fa-solid fa-phone"></i> <span>טלפון: ${v.phone}</span></div>
-                
-                <div class="rating-summary">
-                    <div class="stars">${starsHtml}</div>
-                    <div class="rating-text">
-                        ${v.average_rating > 0 ? `${v.average_rating} מתוך 5 (${v.reviews.length} ביקורות)` : 'אין עדיין דירוגים'}
-                    </div>
+                <div>
+                    <div class="vendor-info"><i class="fa-solid fa-phone"></i> ${vendor.phone || '—'}</div>
+                    <div class="vendor-info"><i class="fa-solid fa-envelope"></i> ${vendor.email || '—'}</div>
+                    <div class="vendor-info"><i class="fa-solid fa-briefcase"></i> ${vendor.category || '—'}</div>
+                    <span class="badge ${vendor.status === 'פעיל' ? 'badge-active' : 'badge-inactive'}">${vendor.status}</span>
                 </div>
-
-                <div class="card-actions">
-                    <a href="tel:${v.phone}" class="btn btn-call"><i class="fa-solid fa-phone"></i> חייג</a>
-                    <button class="btn btn-review" onclick="openReviewModal('${v.id}', '${v.name.replace(/'/g, "\\'")}')"><i class="fa-solid fa-pen-to-square"></i> דרג</button>
+                <div class="admin-actions" style="display: ${isAdmin ? 'flex' : 'none'}">
+                    <button class="btn btn-primary" style="padding:6px 12px; font-size:14px;" onclick="openModal('edit', ${index})"><i class="fa-solid fa-pen"></i> עריכה</button>
+                    <button class="btn btn-danger" style="padding:6px 12px; font-size:14px;" onclick="deleteVendor(${index})"><i class="fa-solid fa-trash"></i> מחיקה</button>
                 </div>
             `;
-            container.appendChild(card);
+            grid.appendChild(card);
         });
     }
 
-    // סינון לפי קטגוריות
-    function filterCategory(category) {
-        currentCategory = category;
-        const chips = document.querySelectorAll('.chip');
-        chips.forEach(chip => {
-            if(chip.textContent.includes(category)) chip.classList.add('active');
-            else chip.classList.remove('active');
-        });
+    function filterVendors() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = vendors.filter(v => 
+            v.name.toLowerCase().includes(query) || 
+            v.id.toString().includes(query) || 
+            (v.category && v.category.toLowerCase().includes(query))
+        );
+        renderVendors(filtered);
+    }
+
+    function loginAdmin() {
+        const pass = prompt("הקש סיסמת מנהל מערכת:");
+        if (pass === "dror2026") {
+            isAdmin = true;
+            document.getElementById('adminBanner').style.display = 'flex';
+            document.getElementById('addBtn').style.display = 'inline-flex';
+            document.getElementById('loginBtn').style.display = 'none';
+            renderVendors();
+        } else if (pass !== null) {
+            alert("סיסמה שגויה!");
+        }
+    }
+
+    function logoutAdmin() {
+        isAdmin = false;
+        document.getElementById('adminBanner').style.display = 'none';
+        document.getElementById('addBtn').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'inline-flex';
         renderVendors();
     }
 
-    // חיפוש בזמן אמת
-    document.getElementById('searchInput').addEventListener('input', renderVendors);
-
-    // ניהול חלונית דירוג
-    function openReviewModal(vendorId, vendorName) {
-        activeVendorIdForReview = vendorId;
-        document.getElementById('modalVendorName').textContent = `דירוג עבור: ${vendorName}`;
-        selectedRatingValue = 0;
-        resetStars();
-        document.getElementById('teacherNameInput').value = '';
-        document.getElementById('commentInput').value = '';
-        document.getElementById('reviewModal').classList.add('active');
+    function openModal(mode, index = null) {
+        const modal = document.getElementById('vendorModal');
+        modal.style.display = 'flex';
+        
+        if (mode === 'edit') {
+            document.getElementById('modalTitle').innerText = 'עריכת ספק';
+            document.getElementById('editIndex').value = index;
+            document.getElementById('formId').value = vendors[index].id;
+            document.getElementById('formName').value = vendors[index].name;
+            document.getElementById('formPhone').value = vendors[index].phone;
+            document.getElementById('formEmail').value = vendors[index].email;
+            document.getElementById('formCategory').value = vendors[index].category;
+            document.getElementById('formStatus').value = vendors[index].status;
+        } else {
+            document.getElementById('modalTitle').innerText = 'הוספת ספק חדש';
+            document.getElementById('editIndex').value = '';
+            document.getElementById('formId').value = '';
+            document.getElementById('formName').value = '';
+            document.getElementById('formPhone').value = '';
+            document.getElementById('formEmail').value = '';
+            document.getElementById('formCategory').value = '';
+            document.getElementById('formStatus').value = 'פעיל';
+        }
     }
 
     function closeModal() {
-        document.getElementById('reviewModal').classList.remove('active');
+        document.getElementById('vendorModal').style.display = 'none';
     }
 
-    const starInputs = document.querySelectorAll('#starRatingInput i');
-    starInputs.forEach(star => {
-        star.addEventListener('click', (e) => {
-            selectedRatingValue = parseInt(e.target.getAttribute('data-value'));
-            resetStars();
-            for (let i = 0; i < selectedRatingValue; i++) {
-                starInputs[i].classList.add('active');
-            }
-        });
-    });
+    function saveVendor() {
+        const index = document.getElementById('editIndex').value;
+        const newVendor = {
+            id: document.getElementById('formId').value,
+            name: document.getElementById('formName').value,
+            phone: document.getElementById('formPhone').value,
+            email: document.getElementById('formEmail').value,
+            category: document.getElementById('formCategory').value,
+            status: document.getElementById('formStatus').value
+        };
 
-    function resetStars() {
-        starInputs.forEach(s => s.classList.remove('active'));
-    }
-
-    // שמירת הביקורת
-    function submitReview() {
-        const teacherName = document.getElementById('teacherNameInput').value.trim();
-        const comment = document.getElementById('commentInput').value.trim();
-
-        if(!teacherName || selectedRatingValue === 0) {
-            alert('אנא מלא את שמך ובחר דירוג כוכבים');
-            return;
+        if (index === '') {
+            vendors.push(newVendor);
+        } else {
+            vendors[index] = newVendor;
         }
 
-        const savedReviews = JSON.parse(localStorage.getItem('vendor_reviews')) || {};
-        if(!savedReviews[activeVendorIdForReview]) savedReviews[activeVendorIdForReview] = [];
-        
-        savedReviews[activeVendorIdForReview].push({
-            teacher: teacherName,
-            rating: selectedRatingValue,
-            comment: comment,
-            date: new Date().toLocaleDateString('he-IL')
-        });
-
-        localStorage.setItem('vendor_reviews', JSON.stringify(savedReviews));
+        localStorage.setItem('vendors', JSON.stringify(vendors));
         closeModal();
-        initApp();
+        renderVendors();
     }
 
-    window.onload = initApp;
-</script>
+    function deleteVendor(index) {
+        if (confirm("האם אתה בטוח שברצונך למחוק ספק זה?")) {
+            vendors.splice(index, 1);
+            localStorage.setItem('vendors', JSON.stringify(vendors));
+            renderVendors();
+        }
+    }
 
+    renderVendors();
+</script>
 </body>
 </html>
