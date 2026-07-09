@@ -285,7 +285,51 @@
         }
     }
 
-    async function loadSystemData() {
+async function loadSystemData() {
+    try {
+        // הגדרת המשתמש ישירות בקוד למניעת בעיות טעינה מהשרת
+        systemUsers = [
+            { "שם מלא": "אביב שטרית", "סיסמה": "Dror2026!", "הרשאה": "מנהל", "תפקיד": "מנהל מערכת", "אזור פעילות": "הכל" }
+        ];
+        
+        // טעינת קובץ הספקים
+        const vRes = await fetch('./vendors.xlsx');
+        if(vRes.ok) {
+            const vBuf = await vRes.arrayBuffer();
+            const vWb = XLSX.read(new Uint8Array(vBuf), { type: 'array' });
+            const jsonData = XLSX.utils.sheet_to_json(vWb.Sheets[vWb.SheetNames[0]]);
+            
+            vendors = jsonData.map(row => {
+                const id = safeString(row['מס.ספק'] || row['מספר ספק'] || '0');
+                let web = safeString(row['Web Site'] || row['אתר']);
+                if (web && !web.startsWith('http')) web = 'https://' + web;
+                return {
+                    id: id,
+                    name: safeString(row['שם ספק'] || row['שם'] || 'ספק כללי'),
+                    city: safeString(row['עיר'] || '—'),
+                    phone: safeString(row['טלפון']),
+                    email: safeString(row['e-mail'] || row['אימייל']),
+                    group: safeString(row['תחום עיסוק'] || row['תאור סוג ספק'] || 'כללי'),
+                    region: row['עיר'] && ['חיפה','קריות','עכו','נתניה','חדרה'].some(n => String(row['עיר']).includes(n)) ? 'צפון' : (row['עיר'] && ['באר שבע','אשדוד','אילת'].some(s => String(row['עיר']).includes(s)) ? 'דרום' : 'מרכז'),
+                    dealType: row['סוג עסקה'] || (id % 3 === 0 ? 'שוטף + 30' : id % 3 === 1 ? 'שוטף + 60' : 'נותן שירות'),
+                    products: row['מוצרים'] ? safeString(row['מוצרים']).split(',') : ['ציוד והספקה'],
+                    rating: parseInt(row['דירוג']) || 5,
+                    approvedContact: safeString(row['איש קשר'] || 'לא הוגדר'),
+                    website: web,
+                    fullAddress: safeString(row['כתובת']),
+                    openDate: row['תאריך פתיחה'] ? safeString(row['תאריך פתיחה']) : '—',
+                    status: row['סטטוס'] || 'פעיל'
+                };
+            });
+            if(localStorage.getItem('cached_vendors_v5')) vendors = JSON.parse(localStorage.getItem('cached_vendors_v5'));
+        }
+        
+        if(sessionStorage.getItem('active_user')) {
+            currentUser = JSON.parse(sessionStorage.getItem('active_user'));
+            showMainApp();
+        }
+    } catch (e) { console.error(e); }
+}
         try {
             const uRes = await fetch('./users.xlsx');
             if(uRes.ok) {
