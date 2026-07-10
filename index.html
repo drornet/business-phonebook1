@@ -85,7 +85,7 @@
         .rating-stars { color: #fbbf24; font-size: 14px; margin-top: 5px; }
 
         .action-buttons { display: flex; gap: 6px; margin-top: auto; padding-top: 10px; flex-wrap: wrap; }
-        .action-btn { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: #f8fafc; cursor: pointer; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: var(--text); }
+        .action-btn { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: #f8fafc; cursor: pointer; font-size: 12px; font-weight: 600; inline-flex; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: var(--text); display: inline-flex; }
         .action-btn.disabled { pointer-events: none; opacity: 0.4; background: #e2e8f0 !important; color: #94a3b8 !important; }
 
         .fav-btn { border: none; background: transparent; font-size: 18px; cursor: pointer; color: #cbd5e1; transition: color 0.2s; }
@@ -170,7 +170,7 @@
         </div>
 
         <div class="stats-bar">
-            <div class="stats" id="statsCounter">נמצאו 0 ספקים</div>
+            <div class="stats" id="statsCounter">טוען נתונים...</div>
             <button class="action-btn" id="btnExportExcel" onclick="exportToExcel()" style="background:#16a34a; color:white; display:none;"><i class="fa-solid fa-file-excel"></i> ייצוא דוח אקסל</button>
         </div>
         
@@ -260,9 +260,12 @@
     const itemsToShow = 30;
     let visibleCount = 30;
 
+    // פונקציית העין - מבודדת לחלוטין ותעבוד תמיד
     function togglePasswordVisibility() {
         const passInput = document.getElementById('loginPassword');
         const icon = document.getElementById('togglePasswordBtn');
+        if (!passInput || !icon) return;
+        
         if (passInput.type === 'password') {
             passInput.type = 'text';
             icon.classList.remove('fa-eye');
@@ -274,9 +277,27 @@
         }
     }
 
+    // פונקציית כניסה - מבודדת, תעבד את הלחיצה גם אם קובץ האקסל נכשל
+    function handleLogin() {
+        const userIn = document.getElementById('loginUsername').value.trim();
+        const passIn = document.getElementById('loginPassword').value.trim();
+        const errLbl = document.getElementById('loginStatusText');
+
+        const found = systemUsers.find(u => safeString(u['שם מלא']) === userIn && safeString(u['סיסמה']) === passIn);
+        
+        if(found) {
+            currentUser = { name: found['שם מלא'], role: found['הרשאה'], title: found['תפקיד'], area: found['אזור פעילות'] || 'הכל' };
+            sessionStorage.setItem('active_user', JSON.stringify(currentUser));
+            errLbl.innerText = "";
+            showMainApp();
+        } else {
+            errLbl.innerText = "שם משתמש או סיסמה שגויים!";
+        }
+    }
+
+    // טעינת קובץ האקסל בנפרד בלי לחסום את הממשק
     async function loadSystemData() {
         try {
-            // עודכן במיוחד לקרוא את קובץ האקסל המדויק שלך מהשרת
             const vRes = await fetch('./ספקים מעודכן.xlsx');
             if(vRes.ok) {
                 const vBuf = await vRes.arrayBuffer();
@@ -306,31 +327,18 @@
                     };
                 });
                 if(localStorage.getItem('cached_vendors_v5')) vendors = JSON.parse(localStorage.getItem('cached_vendors_v5'));
+            }
+        } catch (e) { 
+            console.error("שגיאה בטעינת האקסל:", e); 
+        } finally {
+            // תמיד מעדכן את הממשק, גם אם היו 0 ספקים
+            if (currentUser) {
+                renderVendors();
+                buildCategoryFilter();
             } else {
-                console.error("קובץ האקסל לא נמצא בנתיב המבוקש.");
+                const counter = document.getElementById('statsCounter');
+                if(counter) counter.innerText = `נמצאו ${vendors.length} ספקים`;
             }
-            
-            if(sessionStorage.getItem('active_user')) {
-                currentUser = JSON.parse(sessionStorage.getItem('active_user'));
-                showMainApp();
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    function handleLogin() {
-        const userIn = document.getElementById('loginUsername').value.trim();
-        const passIn = document.getElementById('loginPassword').value.trim();
-        const errLbl = document.getElementById('loginStatusText');
-
-        const found = systemUsers.find(u => safeString(u['שם מלא']) === userIn && safeString(u['סיסמה']) === passIn);
-        
-        if(found) {
-            currentUser = { name: found['שם מלא'], role: found['הרשאה'], title: found['תפקיד'], area: found['אזור פעילות'] || 'הכל' };
-            sessionStorage.setItem('active_user', JSON.stringify(currentUser));
-            errLbl.innerText = "";
-            showMainApp();
-        } else {
-            errLbl.innerText = "שם משתמש או סיסמה שגויים!";
         }
     }
 
@@ -355,6 +363,7 @@
     function buildCategoryFilter() {
         const categories = [...new Set(vendors.map(v => v.group))].filter(Boolean);
         const select = document.getElementById('categoryFilter');
+        if(!select) return;
         select.innerHTML = '<option value="all">כל הקטגוריות</option>';
         categories.forEach(cat => {
             const opt = document.createElement('option'); opt.value = cat; opt.innerText = cat; select.appendChild(opt);
@@ -371,6 +380,8 @@
 
     function renderVendors(append = false) {
         const grid = document.getElementById('vendorsGrid');
+        if (!grid) return;
+        
         const query = document.getElementById('searchInput').value.toLowerCase();
         const selectedCat = document.getElementById('categoryFilter').value;
         const selectedReg = document.getElementById('regionFilter').value;
@@ -417,157 +428,4 @@
                     </div>
                     <div class="vendor-body">
                         <div class="vendor-info"><i class="fa-solid fa-location-dot"></i> <strong>עיר:</strong> ${vendor.city}</div>
-                        <div class="vendor-info"><i class="fa-solid fa-user-tie"></i> <strong>איש קשר:</strong> ${vendor.approvedContact}</div>
-                    </div>
-                </div>
-                <div class="action-buttons" onclick="event.stopPropagation();">
-                    <a href="tel:${vendor.phone}" class="action-btn ${(!vendor.phone || isFrozen) ? 'disabled' : ''}" style="background:#dcfce7;"><i class="fa-solid fa-phone" style="color:var(--success)"></i> חיוג</a>
-                    <a href="${whatsappUrl}" target="_blank" class="action-btn ${(!vendor.phone || isFrozen) ? 'disabled' : ''}" style="background:#e8f5e9;"><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> הודעה</a>
-                    ${vendor.website ? `<a href="${vendor.website}" target="_blank" class="action-btn ${isFrozen ? 'disabled' : ''}"><i class="fa-solid fa-globe" style="color:var(--primary)"></i> אתר</a>` : ''}
-                    <button class="action-btn ${isFrozen ? 'disabled' : ''}" onclick="openFeedbackModal(${actualIndex})"><i class="fa-solid fa-user-plus" style="color:var(--warning)"></i> עדכון</button>
-                </div>
-                <div class="admin-actions" style="display: ${currentUser && currentUser.role === 'מנהל' ? 'flex' : 'none'}" onclick="event.stopPropagation();">
-                    <button class="action-btn" style="background:var(--primary); color:white; width:100%;" onclick="openAdminModal(${actualIndex})"><i class="fa-solid fa-user-gear"></i> הגדרות מנהל</button>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-
-        document.getElementById('loadMoreBtn').style.display = grid.children.length < filtered.length ? 'block' : 'none';
-    }
-
-    function loadMore() { visibleCount += itemsToShow; renderVendors(true); }
-    function resetAndFilter() { renderVendors(false); }
-
-    function changeLayout(type) {
-        currentLayout = type;
-        const grid = document.getElementById('vendorsGrid');
-        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-        if(type === 'grid') { grid.className = 'grid-view'; document.getElementById('viewGridBtn').classList.add('active'); } 
-        else { grid.className = 'list-view'; document.getElementById('viewListBtn').classList.add('active'); }
-        renderVendors(false);
-    }
-
-    function openProfileModal(index, event) {
-        const vendor = vendors[index];
-        document.getElementById('profTitle').innerText = vendor.name;
-        document.getElementById('profBadge').innerText = vendor.dealType;
-        let wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(vendor.fullAddress || vendor.city)}`;
-
-        document.getElementById('profileDetails').innerHTML = `
-            <div class="profile-row"><strong>סטטוס במערכת:</strong> <span style="font-weight:bold; color:${vendor.status === 'מוקפא' ? 'var(--danger)' : 'var(--success)'}">${vendor.status || 'פעיל'}</span></div>
-            <div class="profile-row"><strong>מספר ספק / ח.פ:</strong> <span>${vendor.id}</span></div>
-            <div class="profile-row"><strong>תחום עיסוק קבוע:</strong> <span>${vendor.group}</span></div>
-            <div class="profile-row"><strong>עיר:</strong> <span>${vendor.city}</span></div>
-            <div class="profile-row"><strong>כתובת מלאה:</strong> <span>${vendor.fullAddress || 'לא הוגדרה'}</span></div>
-            <div class="profile-row"><strong>איש קשר מאושר:</strong> <span>${vendor.approvedContact}</span></div>
-            <div class="profile-row"><strong>טלפון:</strong> <span>${vendor.phone || 'אין'}</span></div>
-            <div class="profile-row"><strong>אימייל:</strong> <span>${vendor.email || 'אין'}</span></div>
-            <div class="profile-row"><strong>תאריך פתיחה במערכת:</strong> <span>${vendor.openDate}</span></div>
-            <div style="margin-top:15px; display:flex; gap:10px;">
-                <a href="${wazeUrl}" target="_blank" class="action-btn" style="background:#33ccff; color:white; flex:1; text-align:center;"><i class="fa-brands fa-waze"></i> ניווט ב-Waze</a>
-            </div>
-        `;
-        document.getElementById('vendorProfileModal').style.display = 'flex';
-    }
-    
-    function closeProfileModal() { document.getElementById('vendorProfileModal').style.display = 'none'; }
-    function closeProfileModalOnOutsideClick(e) { if(e.target.id === 'vendorProfileModal') closeProfileModal(); }
-    function openFeedbackModal(index) { document.getElementById('feedbackVendorIndex').value = index; document.getElementById('userFeedbackModal').style.display = 'flex'; }
-    function closeFeedbackModal() { document.getElementById('userFeedbackModal').style.display = 'none'; }
-
-    function submitFeedback() {
-        const idx = document.getElementById('feedbackVendorIndex').value;
-        const contactName = document.getElementById('newUserContact').value.trim();
-        const contactPhone = document.getElementById('newUserPhone').value.trim();
-        vendors[idx].rating = parseInt(document.getElementById('userRating').value);
-
-        if(contactName) {
-            requests.push({ id: Date.now(), vendorIndex: idx, vendorName: vendors[idx].name, proposedContact: contactName + (contactPhone ? ` (${contactPhone})` : '') });
-            localStorage.setItem('dror_contact_reqs', JSON.stringify(requests));
-            updateRequestBadge();
-            alert("הבקשה נשלחה לאישור מנהל!");
-        } else { alert("הדירוג עודכן!"); }
-        localStorage.setItem('cached_vendors_v5', JSON.stringify(vendors));
-        closeFeedbackModal(); renderVendors(false);
-    }
-
-    function renderRequests() {
-        const container = document.getElementById('requestsGrid'); container.innerHTML = '';
-        document.getElementById('requestsStats').innerText = `ממתינות לאישור: ${requests.length} בקשות`;
-        requests.forEach((req, index) => {
-            const card = document.createElement('div'); card.className = 'card';
-            card.innerHTML = `
-                <div class="card-header"><div><div class="vendor-name">${req.vendorName}</div></div><span class="badge badge-pending">ממתין</span></div>
-                <div class="vendor-body"><p style="padding:8px; background:#f1f5f9; border-radius:6px;">${req.proposedContact}</p></div>
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                    <button class="action-btn" style="background:var(--success); color:white; flex:1;" onclick="approveContact(${index})">אשר והוסף</button>
-                    <button class="action-btn" style="background:var(--danger); color:white; flex:1;" onclick="rejectContact(${index})">דחה</button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    function approveContact(index) {
-        const req = requests[index];
-        if(vendors[req.vendorIndex]) vendors[req.vendorIndex].approvedContact = req.proposedContact;
-        requests.splice(index, 1);
-        localStorage.setItem('dror_contact_reqs', JSON.stringify(requests));
-        localStorage.setItem('cached_vendors_v5', JSON.stringify(vendors));
-        updateRequestBadge(); renderRequests();
-    }
-    function rejectContact(index) { requests.splice(index, 1); localStorage.setItem('dror_contact_reqs', JSON.stringify(requests)); updateRequestBadge(); renderRequests(); }
-    function updateRequestBadge() { const badge = document.getElementById('reqCountBadge'); if(requests.length > 0 && currentUser && currentUser.role === 'מנהל') { badge.innerText = requests.length; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; } }
-
-    function openAdminModal(index) {
-        document.getElementById('adminEditIndex').value = index;
-        document.getElementById('admStatus').value = vendors[index].status || 'פעיל';
-        document.getElementById('admName').value = vendors[index].name;
-        document.getElementById('admDealType').value = vendors[index].dealType;
-        document.getElementById('admWebsite').value = vendors[index].website || '';
-        document.getElementById('adminVendorModal').style.display = 'flex';
-    }
-    function closeAdminModal() { document.getElementById('adminVendorModal').style.display = 'none'; }
-    function saveAdminVendor() {
-        const idx = document.getElementById('adminEditIndex').value;
-        vendors[idx].status = document.getElementById('admStatus').value;
-        vendors[idx].name = document.getElementById('admName').value;
-        vendors[idx].dealType = document.getElementById('admDealType').value;
-        vendors[idx].website = document.getElementById('admWebsite').value;
-        localStorage.setItem('cached_vendors_v5', JSON.stringify(vendors));
-        closeAdminModal(); renderVendors(false);
-    }
-
-    function switchView(view) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        if(view === 'vendors') {
-            currentMode = 'all';
-            document.getElementById('vendorsSection').classList.add('active');
-            document.getElementById('navVendors').classList.add('active');
-            renderVendors(false);
-        } else if(view === 'favorites') {
-            currentMode = 'favorites';
-            document.getElementById('vendorsSection').classList.add('active');
-            document.getElementById('navFavs').classList.add('active');
-            renderVendors(false);
-        } else {
-            document.getElementById('requestsSection').classList.add('active');
-            document.getElementById('navRequests').classList.add('active');
-            renderRequests();
-        }
-    }
-
-    // תוקן שם הקובץ גם בייצוא שיתאים למקור
-    function exportToExcel() {
-        const ws = XLSX.utils.json_to_sheet(vendors);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "ספקים מעודכן");
-        XLSX.writeFile(wb, "ספקים מעודכן.xlsx");
-    }
-
-    loadSystemData();
-</script>
-</body>
-</html>
+                        <div class="vendor-info"><i class="fa-solid fa-user-tie"></i> <strong>איש קשר:</strong> ${vendor
