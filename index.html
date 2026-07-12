@@ -38,8 +38,8 @@
         header h1 { color: var(--primary); font-size: 28px; margin-bottom: 5px; }
         .user-welcome-badge { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 12px; background: #f1f5f9; padding: 8px 15px; border-radius: 30px; font-size: 14px; font-weight: 600; }
 
-        .main-nav { display: flex; gap: 10px; margin-bottom: 20px; background: #e2e8f0; padding: 6px; border-radius: 12px; }
-        .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; background: transparent; color: var(--text); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .main-nav { display: flex; gap: 10px; margin-bottom: 20px; background: #e2e8f0; padding: 6px; border-radius: 12px; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 120px; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; background: transparent; color: var(--text); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .nav-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
         .view-section { display: none; }
@@ -105,6 +105,11 @@
 
         .profile-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); font-size: 14px; direction: rtl; }
         .profile-row strong { color: var(--text-muted); }
+
+        /* טבלת ניהול משתמשים */
+        .user-table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: right; }
+        .user-table th, .user-table td { padding: 12px; border: 1px solid var(--border); font-size: 14px; }
+        .user-table th { background: #f1f5f9; color: var(--text); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -114,12 +119,12 @@
     <div class="login-card">
         <i class="fa-solid fa-shield-halved" style="font-size: 45px; color: var(--primary); margin-bottom: 15px;"></i>
         <h2>פורטל ספקים - דרור חינוך</h2>
-        <p>יש להקליד את השם המלא והסיסמה האישית שלך</p>
+        <p>יש להקליד את פרטי החיבור או להיכנס כאורח</p>
         <div id="loginStatusText" style="color:var(--danger); font-size:13px; margin-bottom:10px; font-weight:bold;"></div>
         
         <div class="form-group">
-            <label>שם מלא</label>
-            <input type="text" id="loginUsername" placeholder="שם מלא">
+            <label>שם משתמש / שם מלא</label>
+            <input type="text" id="loginUsername" placeholder="הקלד שם משתמש">
         </div>
         
         <div class="form-group">
@@ -130,7 +135,11 @@
             </div>
         </div>
         
-        <button class="action-btn" id="submitLoginBtn" style="background: var(--primary); color: white; width: 100%; padding: 12px; font-size: 16px; margin-top: 15px;">התחבר למערכת</button>
+        <button class="action-btn" id="submitLoginBtn" style="background: var(--primary); color: white; width: 100%; padding: 12px; font-size: 16px; margin-top: 15px;">התחבר כמנהל</button>
+        
+        <div style="margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 15px;">
+            <button class="action-btn" id="guestLoginBtn" onclick="loginAsGuest()" style="background: #e2e8f0; color: var(--text); width: 100%; padding: 10px; font-size: 14px;"><i class="fa-solid fa-user-secret"></i> כניסה מהירה כאורח (צפייה בלבד)</button>
+        </div>
     </div>
 </div>
 
@@ -147,9 +156,11 @@
     <div class="main-nav" id="mainNavBar">
         <button class="nav-btn active" id="navVendors" onclick="switchView('vendors')"><i class="fa-solid fa-address-book"></i> ספר ספקים</button>
         <button class="nav-btn" id="navFavs" onclick="switchView('favorites')"><i class="fa-solid fa-star" style="color:#ffb020"></i> המועדפים שלי</button>
-        <button class="nav-btn" id="navRequests" onclick="switchView('requests')" style="display: none;"><i class="fa-solid fa-bell"></i> בקשות אישור אנשי קשר <span id="reqCountBadge" style="background:var(--danger); color:white; font-size:11px; padding:2px 6px; border-radius:10px; display:none;">0</span></button>
+        <button class="nav-btn" id="navRequests" onclick="switchView('requests')" style="display: none;"><i class="fa-solid fa-bell"></i> בקשות אישור <span id="reqCountBadge" style="background:var(--danger); color:white; font-size:11px; padding:2px 6px; border-radius:10px; display:none;">0</span></button>
+        <button class="nav-btn" id="navUsers" onclick="switchView('users')" style="display: none;"><i class="fa-solid fa-users-gear"></i> ניהול משתמשים</button>
     </div>
 
+    <!-- מסך ספקים -->
     <div id="vendorsSection" class="view-section active">
         <div class="controls">
             <div class="search-box">
@@ -183,9 +194,42 @@
         <button id="loadMoreBtn" style="padding:12px 24px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin: 20px auto; display:none;" onclick="loadMore()">טען עוד ספקים...</button>
     </div>
 
+    <!-- מסך בקשות אנשי קשר -->
     <div id="requestsSection" class="view-section">
         <div class="stats" id="requestsStats">אין בקשות ממתינות לאישור.</div>
         <div class="grid-view" id="requestsGrid"></div>
+    </div>
+
+    <!-- מסך ניהול משתמשים (למנהל על בלבד) -->
+    <div id="usersSection" class="view-section">
+        <div style="background:white; padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom:20px;">
+            <h3 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-user-plus"></i> הוספת מנהל חדש למערכת</h3>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+                <div class="form-group"><label>שם מלא</label><input type="text" id="addFullName" placeholder="ישראל ישראלי"></div>
+                <div class="form-group"><label>שם משתמש (לחיבור)</label><input type="text" id="addUsername" placeholder="israel123"></div>
+                <div class="form-group"><label>טלפון</label><input type="text" id="addPhone" placeholder="0501234567"></div>
+                <div class="form-group"><label>תפקיד במערכת</label><input type="text" id="addTitle" placeholder="מנהל רכש / סניף"></div>
+                <div class="form-group"><label>סיסמת חיבור</label><input type="text" id="addPassword" placeholder="בחר סיסמה"></div>
+            </div>
+            <button class="action-btn" style="background:var(--success); color:white; margin-top:15px; padding:10px 20px;" onclick="createNewUser()">צור מנהל חדש</button>
+        </div>
+
+        <div style="background:white; padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <h3 style="color:var(--text); margin-bottom:10px;"><i class="fa-solid fa-users"></i> רשימת מנהלים קיימים</h3>
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>שם מלא</th>
+                        <th>שם משתמש</th>
+                        <th>טלפון</th>
+                        <th>תפקיד</th>
+                        <th>הרשאה</th>
+                        <th>פעולות</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -255,9 +299,13 @@
 
 <script>
     let vendors = [];
-    let systemUsers = [
-        { "שם מלא": "אביב שטרית", "סיסמה": "Dror2026!", "הרשאה": "מנהל", "תפקיד": "מנהל מערכת", "אזור פעילות": "הכל" }
+    
+    // רשימת משתמשים ראשונית (אביב מוגדר כמנהל על - Super Admin)
+    let defaultUsers = [
+        { "שם מלא": "אביב שטרית", "שם משתמש": "אביב שטרית", "טלפון": "—", "סיסמה": "Dror2026!", "הרשאה": "מנהל על", "תפקיד": "מנהל מערכת ראשי" }
     ];
+    let systemUsers = [];
+
     let currentUser = null;
     let currentMode = 'all';
     let currentLayout = 'grid';
@@ -271,6 +319,15 @@
     try { requests = JSON.parse(localStorage.getItem('dror_contact_reqs')) || []; } catch(e) { requests = []; }
 
     document.addEventListener("DOMContentLoaded", function() {
+        // טעינת משתמשים מ-localStorage או שימוש בברירת מחדל
+        try {
+            systemUsers = JSON.parse(localStorage.getItem('dror_system_users'));
+            if(!systemUsers || systemUsers.length === 0) {
+                systemUsers = defaultUsers;
+                localStorage.setItem('dror_system_users', JSON.stringify(systemUsers));
+            }
+        } catch(e) { systemUsers = defaultUsers; }
+
         const eyeBtn = document.getElementById('togglePasswordBtn');
         if(eyeBtn) { eyeBtn.addEventListener('click', togglePasswordVisibility); }
 
@@ -310,10 +367,11 @@
         const passIn = document.getElementById('loginPassword').value.trim();
         const errLbl = document.getElementById('loginStatusText');
 
-        const found = systemUsers.find(u => safeString(u['שם מלא']) === userIn && safeString(u['סיסמה']) === passIn);
+        // חיפוש לפי שם משתמש או שם מלא
+        const found = systemUsers.find(u => (safeString(u['שם משתמש']) === userIn || safeString(u['שם מלא']) === userIn) && safeString(u['סיסמה']) === passIn);
         
         if(found) {
-            currentUser = { name: found['שם מלא'], role: found['הרשאה'], title: found['תפקיד'], area: found['אזור פעילות'] || 'הכל' };
+            currentUser = { name: found['שם מלא'], role: found['הרשאה'], title: found['תפקיד'] };
             try { sessionStorage.setItem('active_user', JSON.stringify(currentUser)); } catch(e){}
             if(errLbl) errLbl.innerText = "";
             showMainApp();
@@ -322,11 +380,16 @@
         }
     }
 
+    function loginAsGuest() {
+        currentUser = { name: "אורח במערכת", role: "אורח", title: "צפייה בלבד" };
+        try { sessionStorage.setItem('active_user', JSON.stringify(currentUser)); } catch(e){}
+        showMainApp();
+    }
+
     function safeString(val) { return val === undefined || val === null ? '' : String(val).trim(); }
 
     async function loadSystemData() {
         try {
-            // עודכן לקרוא ישירות מתוך vendors.xlsx כמו שמופיע ב-GitHub שלך
             const vRes = await fetch('./vendors.xlsx');
             if(vRes.ok) {
                 const vBuf = await vRes.arrayBuffer();
@@ -375,9 +438,20 @@
         document.getElementById('lblUserName').innerText = currentUser.name;
         document.getElementById('lblUserRole').innerText = currentUser.title;
 
-        if(currentUser.role === 'מנהל') {
+        // הגדרת נראות רכיבים לפי סוג הרשאה
+        if(currentUser.role === 'מנהל' || currentUser.role === 'מנהל על') {
             document.getElementById('navRequests').style.display = 'inline-block';
             document.getElementById('btnExportExcel').style.display = 'inline-flex';
+        } else {
+            document.getElementById('navRequests').style.display = 'none';
+            document.getElementById('btnExportExcel').style.display = 'none';
+        }
+
+        if(currentUser.role === 'מנהל על') {
+            document.getElementById('navUsers').style.display = 'inline-block';
+            renderUsersTable();
+        } else {
+            document.getElementById('navUsers').style.display = 'none';
         }
 
         buildCategoryFilter();
@@ -399,6 +473,7 @@
 
     function toggleFavorite(id, event) {
         event.stopPropagation();
+        if(currentUser.role === 'אורח') return; // אורח לא יכול לשמור מועדפים קבועים
         if(favorites.includes(id)) { favorites = favorites.filter(f => f !== id); } 
         else { favorites.push(id); }
         localStorage.setItem('dror_favorites', JSON.stringify(favorites));
@@ -443,13 +518,14 @@
             let starsHtml = '⭐'.repeat(vendor.rating);
             const isFav = favorites.includes(vendor.id);
             let whatsappUrl = `https://wa.me/${vendor.phone ? vendor.phone.replace(/[- ]/g, '') : ''}`;
+            const isGuest = currentUser && currentUser.role === 'אורח';
 
             card.innerHTML = `
                 <div style="pointer-events:none;">
                     <div class="card-header">
                         <div style="flex:1;">
                             <div class="vendor-name" style="text-align: right; direction: rtl;">
-                                <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${vendor.id}', event)" style="pointer-events:auto;"><i class="fa-solid fa-star"></i></button>
+                                <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${vendor.id}', event)" style="pointer-events:auto; display: ${isGuest ? 'none' : 'inline-block'}"><i class="fa-solid fa-star"></i></button>
                                 ${vendor.name}
                             </div>
                             <div class="vendor-id">מספר: #${vendor.id}</div>
@@ -466,12 +542,12 @@
                     </div>
                 </div>
                 <div class="action-buttons" onclick="event.stopPropagation();">
-                    <a href="tel:${vendor.phone}" class="action-btn ${(!vendor.phone || isFrozen) ? 'disabled' : ''}" style="background:#dcfce7;"><i class="fa-solid fa-phone" style="color:var(--success)"></i> חיוג</a>
-                    <a href="${whatsappUrl}" target="_blank" class="action-btn ${(!vendor.phone || isFrozen) ? 'disabled' : ''}" style="background:#e8f5e9;"><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> הודעה</a>
+                    <a href="tel:${vendor.phone}" class="action-btn ${(!vendor.phone || isFrozen || isGuest) ? 'disabled' : ''}" style="background:#dcfce7;"><i class="fa-solid fa-phone" style="color:var(--success)"></i> חיוג</a>
+                    <a href="${whatsappUrl}" target="_blank" class="action-btn ${(!vendor.phone || isFrozen || isGuest) ? 'disabled' : ''}" style="background:#e8f5e9;"><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> הודעה</a>
                     ${vendor.website ? `<a href="${vendor.website}" target="_blank" class="action-btn ${isFrozen ? 'disabled' : ''}"><i class="fa-solid fa-globe" style="color:var(--primary)"></i> אתר</a>` : ''}
-                    <button class="action-btn ${isFrozen ? 'disabled' : ''}" onclick="openFeedbackModal(${actualIndex})"><i class="fa-solid fa-user-plus" style="color:var(--warning)"></i> עדכון</button>
+                    <button class="action-btn ${(isFrozen || isGuest) ? 'disabled' : ''}" onclick="openFeedbackModal(${actualIndex})"><i class="fa-solid fa-user-plus" style="color:var(--warning)"></i> עדכון</button>
                 </div>
-                <div class="admin-actions" style="display: ${currentUser && currentUser.role === 'מנהל' ? 'flex' : 'none'}" onclick="event.stopPropagation();">
+                <div class="admin-actions" style="display: ${currentUser && (currentUser.role === 'מנהל' || currentUser.role === 'מנהל על') ? 'flex' : 'none'}" onclick="event.stopPropagation();">
                     <button class="action-btn" style="background:var(--primary); color:white; width:100%;" onclick="openAdminModal(${actualIndex})"><i class="fa-solid fa-user-gear"></i> הגדרות מנהל</button>
                 </div>
             `;
@@ -569,7 +645,7 @@
     
     function rejectContact(index) { requests.splice(index, 1); localStorage.setItem('dror_contact_reqs', JSON.stringify(requests)); updateRequestBadge(); renderRequests(); }
     
-    function updateRequestBadge() { const badge = document.getElementById('reqCountBadge'); if(!badge) return; if(requests.length > 0 && currentUser && currentUser.role === 'מנהל') { badge.innerText = requests.length; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; } }
+    function updateRequestBadge() { const badge = document.getElementById('reqCountBadge'); if(!badge) return; if(requests.length > 0 && (currentUser.role === 'מנהל' || currentUser.role === 'מנהל על')) { badge.innerText = requests.length; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; } }
 
     function openAdminModal(index) {
         document.getElementById('adminEditIndex').value = index;
@@ -592,9 +668,85 @@
         closeAdminModal(); renderVendors(false);
     }
 
+    /* פונקציות ניהול משתמשים (מנהל על בלבד) */
+    function createNewUser() {
+        const fullName = document.getElementById('addFullName').value.trim();
+        const username = document.getElementById('addUsername').value.trim();
+        const phone = document.getElementById('addPhone').value.trim();
+        const title = document.getElementById('addTitle').value.trim();
+        const password = document.getElementById('addPassword').value.trim();
+
+        if(!fullName || !username || !password) {
+            alert("חובה למלא שם מלא, שם משתמש וסיסמה!");
+            return;
+        }
+
+        // בדיקה ששם המשתמש לא תפוס
+        if(systemUsers.some(u => u['שם משתמש'].toLowerCase() === username.toLowerCase())) {
+            alert("שם המשתמש הזה כבר תפוס!");
+            return;
+        }
+
+        const newUser = {
+            "שם מלא": fullName,
+            "שם משתמש": username,
+            "טלפון": phone || "—",
+            "תפקיד": title || "מנהל",
+            "סיסמה": password,
+            "הרשאה": "מנהל"
+        };
+
+        systemUsers.push(newUser);
+        localStorage.setItem('dror_system_users', JSON.stringify(systemUsers));
+        
+        // איפוס שדות
+        document.getElementById('addFullName').value = '';
+        document.getElementById('addUsername').value = '';
+        document.getElementById('addPhone').value = '';
+        document.getElementById('addTitle').value = '';
+        document.getElementById('addPassword').value = '';
+
+        alert("המנהל החדש נוסף בהצלחה!");
+        renderUsersTable();
+    }
+
+    function removeUser(index) {
+        if(systemUsers[index]['הרשאה'] === 'מנהל על') {
+            alert("לא ניתן למחוק את מנהל העל הראשי!");
+            return;
+        }
+        if(confirm(`האם אתה בטוח שברצונך למחוק את ${systemUsers[index]['שם מלא']}?`)) {
+            systemUsers.splice(index, 1);
+            localStorage.setItem('dror_system_users', JSON.stringify(systemUsers));
+            renderUsersTable();
+        }
+    }
+
+    function renderUsersTable() {
+        const tbody = document.getElementById('usersTableBody');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+
+        systemUsers.forEach((user, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${user['שם מלא']}</td>
+                <td>${user['שם משתמש']}</td>
+                <td>${user['טלפון']}</td>
+                <td>${user['תפקיד']}</td>
+                <td><span class="badge" style="background:${user['הרשאה'] === 'מנהל על' ? '#db2777' : 'var(--primary)'}; color:white;">${user['הרשאה']}</span></td>
+                <td>
+                    ${user['הרשאה'] !== 'מנהל על' ? `<button class="action-btn" style="background:var(--danger); color:white; padding:4px 8px;" onclick="removeUser(${index})"><i class="fa-solid fa-trash"></i> מחק</button>` : '—'}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
     function switchView(view) {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        
         if(view === 'vendors') {
             currentMode = 'all';
             document.getElementById('vendorsSection').classList.add('active');
@@ -605,10 +757,14 @@
             document.getElementById('vendorsSection').classList.add('active');
             document.getElementById('navFavs').classList.add('active');
             renderVendors(false);
-        } else {
+        } else if(view === 'requests') {
             document.getElementById('requestsSection').classList.add('active');
             document.getElementById('navRequests').classList.add('active');
             renderRequests();
+        } else if(view === 'users') {
+            document.getElementById('usersSection').classList.add('active');
+            document.getElementById('navUsers').classList.add('active');
+            renderUsersTable();
         }
     }
 
