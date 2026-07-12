@@ -25,7 +25,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg); color: var(--text); padding: 15px; }
         
-        /* מיכל האפליקציה הראשי - מוסרת כברירת מחדל עד להתחברות */
+        /* מיכל האפליקציה הראשי - מוסתר כברירת מחדל עד להתחברות */
         .container { max-width: 1300px; margin: 0 auto; display: none; }
         
         /* מסך התחברות */
@@ -326,8 +326,8 @@
 
     async function loadSystemData() {
         try {
-            // טעינת קובץ האקסל המקומי שנמצא באותה תיקייה
-            const vRes = await fetch('./ספקים מעודכן.xlsx');
+            // עודכן לקרוא ישירות מתוך vendors.xlsx כמו שמופיע ב-GitHub שלך
+            const vRes = await fetch('./vendors.xlsx');
             if(vRes.ok) {
                 const vBuf = await vRes.arrayBuffer();
                 const vWb = XLSX.read(new Uint8Array(vBuf), { type: 'array' });
@@ -360,7 +360,6 @@
         } catch (e) { 
             console.error("שגיאה בטעינת האקסל:", e); 
         } finally {
-            // האפליקציה תוצג רק אם זוהה חיבור פעיל
             if (currentUser) {
                 showMainApp();
             } else {
