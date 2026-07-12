@@ -25,7 +25,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg); color: var(--text); padding: 15px; }
         
-        /* מיכל האפליקציה הראשי - מוסתר כברירת מחדל */
+        /* מיכל האפליקציה הראשי - מוסרת כברירת מחדל עד להתחברות */
         .container { max-width: 1300px; margin: 0 auto; display: none; }
         
         /* מסך התחברות */
@@ -271,7 +271,6 @@
     try { requests = JSON.parse(localStorage.getItem('dror_contact_reqs')) || []; } catch(e) { requests = []; }
 
     document.addEventListener("DOMContentLoaded", function() {
-        // מאזינים לאלמנטים קבועים
         const eyeBtn = document.getElementById('togglePasswordBtn');
         if(eyeBtn) { eyeBtn.addEventListener('click', togglePasswordVisibility); }
 
@@ -281,7 +280,6 @@
         const logoutBtn = document.getElementById('logoutBtn');
         if(logoutBtn) { logoutBtn.addEventListener('click', handleLogout); }
 
-        // בדיקה אם יש סשן קיים
         try {
             if(sessionStorage.getItem('active_user')) {
                 currentUser = JSON.parse(sessionStorage.getItem('active_user'));
@@ -328,7 +326,7 @@
 
     async function loadSystemData() {
         try {
-            // קריאה לקובץ האקסל המקומי שנמצא בתיקייה הראשית
+            // טעינת קובץ האקסל המקומי שנמצא באותה תיקייה
             const vRes = await fetch('./ספקים מעודכן.xlsx');
             if(vRes.ok) {
                 const vBuf = await vRes.arrayBuffer();
@@ -362,7 +360,7 @@
         } catch (e) { 
             console.error("שגיאה בטעינת האקסל:", e); 
         } finally {
-            // הצגת האפליקציה רק במידה והמשתמש מחובר
+            // האפליקציה תוצג רק אם זוהה חיבור פעיל
             if (currentUser) {
                 showMainApp();
             } else {
@@ -538,7 +536,7 @@
             localStorage.setItem('dror_contact_reqs', JSON.stringify(requests));
             updateRequestBadge();
             alert("הבקשה נשלחה לאישור מנהל!");
-        } else { alert("הדירוג עודכן!"); }
+        } else { alert("הדירוג עודכן בהצלחה!"); }
         localStorage.setItem('cached_vendors_v5', JSON.stringify(vendors));
         closeFeedbackModal(); renderVendors(false);
     }
