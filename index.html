@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת ניהול ומידע ספקים - דרור חינוך</title>
-    <!-- ספריות חיצוניות -->
+    <title>מערכת ניהול ומידע ספקים מתקדמת - דרור חינוך</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -25,8 +24,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg); color: var(--text); padding: 15px; }
         
-        /* מיכל האפליקציה הראשי - מוסתר כברירת מחדל עד להתחברות */
-        .container { max-width: 1300px; margin: 0 auto; display: none; }
+        .container { max-width: 1400px; margin: 0 auto; display: none; }
         
         /* מסך התחברות */
         .login-wrapper { display: flex; justify-content: center; align-items: center; min-height: 85vh; }
@@ -39,7 +37,7 @@
         .user-welcome-badge { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 12px; background: #f1f5f9; padding: 8px 15px; border-radius: 30px; font-size: 14px; font-weight: 600; }
 
         .main-nav { display: flex; gap: 10px; margin-bottom: 20px; background: #e2e8f0; padding: 6px; border-radius: 12px; flex-wrap: wrap; }
-        .nav-btn { flex: 1; min-width: 120px; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; background: transparent; color: var(--text); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .nav-btn { flex: 1; min-width: 120px; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; background: transparent; color: var(--text); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .nav-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
         .view-section { display: none; }
@@ -66,7 +64,6 @@
         
         .list-view { display: flex; flex-direction: column; gap: 8px; }
         .list-view .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; cursor: pointer; }
-        .list-view .card.frozen { background: #e2e8f0; }
 
         .card-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .vendor-name { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.4; display: flex; align-items: center; gap: 6px; }
@@ -75,7 +72,7 @@
         .badge { padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; }
         .badge-deal { background: #e0f2fe; color: #0369a1; }
         .badge-pending { background: #fef3c7; color: #92400e; }
-        .badge-frozen { background: #cbd5e1; color: #475569; }
+        .badge-frozen { background: #fecdd3; color: #9f1239; }
         .badge-active { background: #dcfce7; color: #16a34a; }
 
         .vendor-body { margin-bottom: 12px; text-align: right; }
@@ -94,7 +91,7 @@
         .admin-actions { display: none; gap: 8px; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; width: 100%; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .form-group { margin-bottom: 12px; text-align: right; }
         .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-size: 14px; text-align: right; }
@@ -106,10 +103,26 @@
         .profile-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); font-size: 14px; direction: rtl; }
         .profile-row strong { color: var(--text-muted); }
 
-        /* טבלת ניהול משתמשים */
         .user-table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: right; }
         .user-table th, .user-table td { padding: 12px; border: 1px solid var(--border); font-size: 14px; }
         .user-table th { background: #f1f5f9; color: var(--text); font-weight: bold; }
+
+        /* סגנון מערכת הודעות וצ'אט */
+        .chat-container { display: flex; height: 60vh; background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+        .chat-sidebar { width: 30%; border-left: 1px solid var(--border); background: #f8fafc; overflow-y: auto; }
+        .chat-main { width: 70%; display: flex; flex-direction: column; background: #fff; }
+        .chat-user-item { padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; text-align: right; transition: background 0.2s; }
+        .chat-user-item:hover, .chat-user-item.active { background: #e2e8f0; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f1f5f9; }
+        .message-bubble { max-width: 70%; padding: 10px 15px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
+        .message-bubble.sent { background: var(--primary); color: white; align-self: flex-start; border-bottom-left-radius: 0; }
+        .message-bubble.received { background: white; color: var(--text); align-self: flex-end; border-bottom-right-radius: 0; border: 1px solid var(--border); }
+        .chat-input-area { pading: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; padding: 10px; }
+
+        /* סגנון רשימת פתקים ותגובות */
+        .section-title { font-size: 15px; font-weight: bold; margin-top: 15px; margin-bottom: 8px; border-bottom: 2px solid var(--border); padding-bottom: 4px; text-align: right;}
+        .note-item, .review-item { background: #f1f5f9; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; text-align: right; position: relative;}
+        .delete-btn { position: absolute; left: 8px; top: 8px; color: var(--danger); border: none; background: transparent; cursor: pointer; font-size: 14px;}
     </style>
 </head>
 <body>
@@ -123,7 +136,7 @@
         <div id="loginStatusText" style="color:var(--danger); font-size:13px; margin-bottom:10px; font-weight:bold;"></div>
         
         <div class="form-group">
-            <label>שם משתמש / שם מלא</label>
+            <label>שם משתמש</label>
             <input type="text" id="loginUsername" placeholder="הקלד שם משתמש">
         </div>
         
@@ -135,7 +148,7 @@
             </div>
         </div>
         
-        <button class="action-btn" id="submitLoginBtn" style="background: var(--primary); color: white; width: 100%; padding: 12px; font-size: 16px; margin-top: 15px;">התחבר כמנהל</button>
+        <button class="action-btn" id="submitLoginBtn" style="background: var(--primary); color: white; width: 100%; padding: 12px; font-size: 16px; margin-top: 15px;">התחבר למערכת</button>
         
         <div style="margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 15px;">
             <button class="action-btn" id="guestLoginBtn" onclick="loginAsGuest()" style="background: #e2e8f0; color: var(--text); width: 100%; padding: 10px; font-size: 14px;"><i class="fa-solid fa-user-secret"></i> כניסה מהירה כאורח (צפייה בלבד)</button>
@@ -155,9 +168,10 @@
 
     <div class="main-nav" id="mainNavBar">
         <button class="nav-btn active" id="navVendors" onclick="switchView('vendors')"><i class="fa-solid fa-address-book"></i> ספר ספקים</button>
-        <button class="nav-btn" id="navFavs" onclick="switchView('favorites')"><i class="fa-solid fa-star" style="color:#ffb020"></i> המועדפים שלי</button>
+        <button class="nav-btn" id="navFavs" onclick="switchView('favorites')"><i class="fa-solid fa-star" style="color:#ffb020"></i> המועדפים</button>
+        <button class="nav-btn" id="navChat" onclick="switchView('chat')"><i class="fa-solid fa-comments"></i> צ'אט פנימי</button>
         <button class="nav-btn" id="navRequests" onclick="switchView('requests')" style="display: none;"><i class="fa-solid fa-bell"></i> בקשות אישור <span id="reqCountBadge" style="background:var(--danger); color:white; font-size:11px; padding:2px 6px; border-radius:10px; display:none;">0</span></button>
-        <button class="nav-btn" id="navUsers" onclick="switchView('users')" style="display: none;"><i class="fa-solid fa-users-gear"></i> ניהול משתמשים</button>
+        <button class="nav-btn" id="navUsers" onclick="switchView('users')" style="display: none;"><i class="fa-solid fa-users-gear"></i> ניהול מערכת</button>
     </div>
 
     <!-- מסך ספקים -->
@@ -165,11 +179,15 @@
         <div class="controls">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="חיפוש חופשי לפי שם, ח.פ, עיר, כתובת..." oninput="resetAndFilter()">
+                <input type="text" id="searchInput" placeholder="חיפוש חופשי לפי שם, ח.פ, עיר..." oninput="resetAndFilter()">
             </div>
             
-            <select class="filter-select" id="categoryFilter" onchange="resetAndFilter()">
+            <select class="filter-select" id="categoryFilter" onchange="updateSubCategoryFilter(); resetAndFilter();">
                 <option value="all">כל הקטגוריות</option>
+            </select>
+
+            <select class="filter-select" id="subCategoryFilter" onchange="resetAndFilter()">
+                <option value="all">כל התתי-קטגוריות</option>
             </select>
 
             <select class="filter-select" id="regionFilter" onchange="resetAndFilter()">
@@ -194,36 +212,78 @@
         <button id="loadMoreBtn" style="padding:12px 24px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin: 20px auto; display:none;" onclick="loadMore()">טען עוד ספקים...</button>
     </div>
 
+    <!-- מסך צ'אט והודעות פנימיות -->
+    <div id="chatSection" class="view-section">
+        <div class="chat-container">
+            <div class="chat-sidebar" id="chatUsersList"></div>
+            <div class="chat-main">
+                <div style="background:#e2e8f0; padding:15px; text-align:right; font-weight:bold;" id="chatHeaderTitle">בחר משתמש כדי להתחיל שיחה</div>
+                <div class="chat-messages" id="chatMessagesContainer"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatMessageInput" placeholder="הקלד הודעה כאן..." style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border);">
+                    <button class="action-btn" style="background:var(--primary); color:white; padding:10px 20px;" onclick="sendChatMessage()">שלח</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- מסך בקשות אנשי קשר -->
     <div id="requestsSection" class="view-section">
         <div class="stats" id="requestsStats">אין בקשות ממתינות לאישור.</div>
         <div class="grid-view" id="requestsGrid"></div>
     </div>
 
-    <!-- מסך ניהול משתמשים (למנהל על בלבד) -->
+    <!-- מסך ניהול משתמשים ומערכת קטגוריות -->
     <div id="usersSection" class="view-section">
+        <!-- ניהול קטגוריות ותתי קטגוריות -->
         <div style="background:white; padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom:20px;">
-            <h3 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-user-plus"></i> הוספת מנהל חדש למערכת</h3>
+            <h3 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-folder-plus"></i> ניהול קטגוריות ותתי קטגוריות</h3>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+                <div class="form-group"><label>שם קטגוריה ראשית חדשה</label><input type="text" id="newCatName" placeholder="לדוגמה: מחשוב"></div>
+                <div class="form-group">
+                    <label>או שיוך תת-קטגוריה לקטגוריה קיימת</label>
+                    <select id="parentCatSelect"></select>
+                </div>
+                <div class="form-group"><label>שם תת-קטגוריה</label><input type="text" id="newSubCatName" placeholder="לדוגמה: טאבלטים"></div>
+            </div>
+            <button class="action-btn" style="background:var(--primary); color:white; margin-top:10px;" onclick="addCategoryStructure()">שמור מבנה קטגוריה</button>
+        </div>
+
+        <!-- הוספת משתמשים לפי קטגוריות והרשאות -->
+        <div style="background:white; padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom:20px;">
+            <h3 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-user-plus"></i> הוספת משתמש והגדרת הרשאות ספציפיות</h3>
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
                 <div class="form-group"><label>שם מלא</label><input type="text" id="addFullName" placeholder="ישראל ישראלי"></div>
                 <div class="form-group"><label>שם משתמש (לחיבור)</label><input type="text" id="addUsername" placeholder="israel123"></div>
-                <div class="form-group"><label>טלפון</label><input type="text" id="addPhone" placeholder="0501234567"></div>
-                <div class="form-group"><label>תפקיד במערכת</label><input type="text" id="addTitle" placeholder="מנהל רכש / סניף"></div>
                 <div class="form-group"><label>סיסמת חיבור</label><input type="text" id="addPassword" placeholder="בחר סיסמה"></div>
+                <div class="form-group">
+                    <label>רמת הרשאה במערכת</label>
+                    <select id="addUserRole">
+                        <option value="משתמש רגיל">משתמש רגיל</option>
+                        <option value="מנהל">מנהל (רכז סניף)</option>
+                        <option value="מנהל על">מנהל על (Super Admin)</option>
+                        <option value="אורח">אורח (צפייה בלבד)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>מורשה לצפות בקטגוריה</label>
+                    <select id="addUserCategoryRestriction">
+                        <option value="all">הכל - ללא הגבלה</option>
+                    </select>
+                </div>
             </div>
-            <button class="action-btn" style="background:var(--success); color:white; margin-top:15px; padding:10px 20px;" onclick="createNewUser()">צור מנהל חדש</button>
+            <button class="action-btn" style="background:var(--success); color:white; margin-top:15px; padding:10px 20px;" onclick="createNewUser()">צור משתמש חדש</button>
         </div>
 
         <div style="background:white; padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            <h3 style="color:var(--text); margin-bottom:10px;"><i class="fa-solid fa-users"></i> רשימת מנהלים קיימים</h3>
+            <h3 style="color:var(--text); margin-bottom:10px;"><i class="fa-solid fa-users"></i> רשימת מנהלים ומשתמשים קיימים</h3>
             <table class="user-table">
                 <thead>
                     <tr>
                         <th>שם מלא</th>
                         <th>שם משתמש</th>
-                        <th>טלפון</th>
-                        <th>תפקיד</th>
                         <th>הרשאה</th>
+                        <th>גישת קטגוריות</th>
                         <th>פעולות</th>
                     </tr>
                 </thead>
@@ -233,39 +293,49 @@
     </div>
 </div>
 
-<!-- מודאל פרופיל ספק מלא -->
+<!-- מודאל פרופיל ספק מורחב (כולל פתקים ותגובות) -->
 <div class="modal" id="vendorProfileModal" onclick="closeProfileModalOnOutsideClick(event)">
-    <div class="modal-content" style="max-width: 550px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid var(--primary); padding-bottom:10px;">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:2px solid var(--primary); padding-bottom:10px;">
             <h3 id="profTitle" style="color:var(--primary); font-size:22px;">פרופיל ספק מלא</h3>
             <span id="profBadge" class="badge badge-deal"></span>
         </div>
+        
         <div id="profileDetails"></div>
-        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
-            <button class="action-btn" onclick="closeProfileModal()" style="background:var(--text); color:white; padding:10px 20px;">סגור חלונית</button>
-        </div>
-    </div>
-</div>
 
-<!-- מודאל הוספת איש קשר -->
-<div class="modal" id="userFeedbackModal">
-    <div class="modal-content">
-        <h3 style="margin-bottom: 15px; color: var(--primary);"><i class="fa-solid fa-user-plus"></i> הוספת איש קשר וביקורת ספק</h3>
-        <input type="hidden" id="feedbackVendorIndex">
-        <div class="form-group">
-            <label>שם איש הקשר החדש (דורש אישור מנהל)</label>
-            <input type="text" id="newUserContact" placeholder="שם מלא ותפקיד">
+        <!-- מערכת פתקים מובנית לחברים במערכת -->
+        <div id="notesContainerArea">
+            <div class="section-title"><i class="fa-solid fa-note-sticky"></i> פתקים והערות פנימיות</div>
+            <div id="vendorNotesList"></div>
+            <div style="display:flex; gap:6px; margin-top:5px;" id="addNoteBox">
+                <input type="text" id="newNoteInput" placeholder="הוסף פתק אישי על הספק..." style="flex:1; padding:8px; border:1px solid var(--border); border-radius:6px;">
+                <button class="action-btn" style="background:var(--primary); color:white;" onclick="addNoteToVendor()">הוסף</button>
+            </div>
         </div>
-        <div class="form-group"><label>טלפון איש קשר</label><input type="text" id="newUserPhone" placeholder="מספר נייד"></div>
-        <div class="form-group">
-            <label>דירוג כוכבים</label>
-            <select id="userRating">
-                <option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option>
-            </select>
+
+        <!-- מערכת ביקורות, תגובות ודירוג כוכבים -->
+        <div id="reviewsContainerArea">
+            <div class="section-title"><i class="fa-solid fa-comments"></i> חוות דעת ותגובות משתמשים (1-5)</div>
+            <div id="vendorReviewsList"></div>
+            <div style="background:#f8fafc; padding:10px; border-radius:8px; margin-top:5px;" id="addReviewBox">
+                <div style="display:flex; gap:10px; margin-bottom:5px;">
+                    <select id="newReviewRating" style="padding:5px; border-radius:5px; border:1px solid var(--border);">
+                        <option value="5">⭐⭐⭐⭐⭐ (5 - מצוין)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 - טוב מאוד)</option>
+                        <option value="3">⭐⭐⭐ (3 - בינוני)</option>
+                        <option value="2">⭐⭐ (2 - טעון שיפור)</option>
+                        <option value="1">⭐ (1 - לא טוב)</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <input type="text" id="newReviewComment" placeholder="כתוב ביקורת על איכות השירות והאספקה..." style="flex:1; padding:8px; border:1px solid var(--border); border-radius:6px;">
+                    <button class="action-btn" style="background:var(--success); color:white;" onclick="addReviewToVendor()">פרסם</button>
+                </div>
+            </div>
         </div>
+
         <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
-            <button class="action-btn" onclick="closeFeedbackModal()">ביטול</button>
-            <button class="action-btn" style="background:var(--primary); color:white;" onclick="submitFeedback()">שמור ושלח</button>
+            <button class="action-btn" onclick="closeProfileModal()" style="background:var(--text); color:white; padding:10px 20px;">סגור</button>
         </div>
     </div>
 </div>
@@ -276,13 +346,22 @@
         <h3 style="margin-bottom:15px; color:var(--primary);">הגדרות מנהל וסטטוס ספק</h3>
         <input type="hidden" id="adminEditIndex">
         <div class="form-group">
-            <label>סטטוס ספק</label>
+            <label>סטטוס במערכת</label>
             <select id="admStatus">
                 <option value="פעיל">🟢 פעיל (פתוח לכולם)</option>
-                <option value="מוקפא">🔴 מוקפא (חסום לשימוש)</option>
+                <option value="לא פעיל">❌ לא פעיל (מוסתר ממשתמשים רגילים ואורחים)</option>
+                <option value="מוקפא">🔴 מוקפא (חסום לשימוש אך גלוי)</option>
             </select>
         </div>
         <div class="form-group"><label>שם ספק</label><input type="text" id="admName"></div>
+        <div class="form-group">
+            <label>קטגוריה ראשית</label>
+            <select id="admCategory" onchange="updateAdminModalSubCats()"></select>
+        </div>
+        <div class="form-group">
+            <label>תת קטגוריה</label>
+            <select id="admSubCategory"></select>
+        </div>
         <div class="form-group">
             <label>סוג עסקה ותנאי תשלום</label>
             <select id="admDealType">
@@ -299,66 +378,58 @@
 
 <script>
     let vendors = [];
-    
-    // רשימת משתמשים ראשונית (אביב מוגדר כמנהל על - Super Admin)
-    let defaultUsers = [
-        { "שם מלא": "אביב שטרית", "שם משתמש": "אביב שטרית", "טלפון": "—", "סיסמה": "Dror2026!", "הרשאה": "מנהל על", "תפקיד": "מנהל מערכת ראשי" }
-    ];
     let systemUsers = [];
+    let categoriesStructure = {
+        "מזון והסעדה": ["קייטרינג", "חומרי גלם", "כיבוד קל"],
+        "ציוד משרדי": ["נייר ודפוס", "כלי כתיבה"],
+        "הדרכה וחינוך": ["מרצים", "ערכות למידה", "הפעלות"],
+        "תשתיות ומחשוב": ["תוכנה", "תמיכה טכנית", "חומרה"]
+    };
 
     let currentUser = null;
     let currentMode = 'all';
     let currentLayout = 'grid';
+    let activeChatUserIndex = null;
+    let currentOpenedVendorIndex = null;
     const itemsToShow = 30;
     let visibleCount = 30;
 
     let favorites = [];
     let requests = [];
-    
-    try { favorites = JSON.parse(localStorage.getItem('dror_favorites')) || []; } catch(e) { favorites = []; }
-    try { requests = JSON.parse(localStorage.getItem('dror_contact_reqs')) || []; } catch(e) { requests = []; }
+    let chatMessages = [];
+
+    // רשימת משתמשי ברירת מחדל
+    let defaultUsers = [
+        { "שם מלא": "אביב שטרית", "שם משתמש": "אביב שטרית", "סיסמה": "Dror2026!", "הרשאה": "מנהל על", "קטגוריה": "all" }
+    ];
 
     document.addEventListener("DOMContentLoaded", function() {
-        // טעינת משתמשים מ-localStorage או שימוש בברירת מחדל
         try {
-            systemUsers = JSON.parse(localStorage.getItem('dror_system_users'));
-            if(!systemUsers || systemUsers.length === 0) {
-                systemUsers = defaultUsers;
-                localStorage.setItem('dror_system_users', JSON.stringify(systemUsers));
+            systemUsers = JSON.parse(localStorage.getItem('dror_system_users_v6')) || defaultUsers;
+            if(!localStorage.getItem('dror_system_users_v6')) {
+                localStorage.setItem('dror_system_users_v6', JSON.stringify(systemUsers));
             }
+            categoriesStructure = JSON.parse(localStorage.getItem('dror_categories_struct')) || categoriesStructure;
+            chatMessages = JSON.parse(localStorage.getItem('dror_chat_messages')) || [];
         } catch(e) { systemUsers = defaultUsers; }
 
-        const eyeBtn = document.getElementById('togglePasswordBtn');
-        if(eyeBtn) { eyeBtn.addEventListener('click', togglePasswordVisibility); }
+        document.getElementById('togglePasswordBtn').addEventListener('click', togglePasswordVisibility);
+        document.getElementById('submitLoginBtn').addEventListener('click', handleLogin);
+        document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
-        const loginBtn = document.getElementById('submitLoginBtn');
-        if(loginBtn) { loginBtn.addEventListener('click', handleLogin); }
-        
-        const logoutBtn = document.getElementById('logoutBtn');
-        if(logoutBtn) { logoutBtn.addEventListener('click', handleLogout); }
-
-        try {
-            if(sessionStorage.getItem('active_user')) {
-                currentUser = JSON.parse(sessionStorage.getItem('active_user'));
-            }
-        } catch(e){}
-
+        if(sessionStorage.getItem('active_user')) {
+            currentUser = JSON.parse(sessionStorage.getItem('active_user'));
+        }
         loadSystemData();
     });
 
     function togglePasswordVisibility() {
         const passInput = document.getElementById('loginPassword');
         const icon = document.getElementById('togglePasswordBtn');
-        if (!passInput || !icon) return;
-        
         if (passInput.type === 'password') {
-            passInput.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+            passInput.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash');
         } else {
-            passInput.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+            passInput.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye');
         }
     }
 
@@ -367,12 +438,10 @@
         const passIn = document.getElementById('loginPassword').value.trim();
         const errLbl = document.getElementById('loginStatusText');
 
-        // חיפוש לפי שם משתמש או שם מלא
-        const found = systemUsers.find(u => (safeString(u['שם משתמש']) === userIn || safeString(u['שם מלא']) === userIn) && safeString(u['סיסמה']) === passIn);
-        
+        const found = systemUsers.find(u => u['שם משתמש'] === userIn && u['סיסמה'] === passIn);
         if(found) {
-            currentUser = { name: found['שם מלא'], role: found['הרשאה'], title: found['תפקיד'] };
-            try { sessionStorage.setItem('active_user', JSON.stringify(currentUser)); } catch(e){}
+            currentUser = { name: found['שם מלא'], username: found['שם משתמש'], role: found['הרשאה'], allowedCategory: found['קטגוריה'] || 'all' };
+            sessionStorage.setItem('active_user', JSON.stringify(currentUser));
             if(errLbl) errLbl.innerText = "";
             showMainApp();
         } else {
@@ -381,12 +450,12 @@
     }
 
     function loginAsGuest() {
-        currentUser = { name: "אורח במערכת", role: "אורח", title: "צפייה בלבד" };
-        try { sessionStorage.setItem('active_user', JSON.stringify(currentUser)); } catch(e){}
+        currentUser = { name: "אורח במערכת", username: "guest", role: "אורח", allowedCategory: "all" };
+        sessionStorage.setItem('active_user', JSON.stringify(currentUser));
         showMainApp();
     }
 
-    function safeString(val) { return val === undefined || val === null ? '' : String(val).trim(); }
+    function handleLogout() { sessionStorage.removeItem('active_user'); window.location.reload(); }
 
     async function loadSystemData() {
         try {
@@ -396,383 +465,404 @@
                 const vWb = XLSX.read(new Uint8Array(vBuf), { type: 'array' });
                 const jsonData = XLSX.utils.sheet_to_json(vWb.Sheets[vWb.SheetNames[0]]);
                 
-                vendors = jsonData.map(row => {
-                    const id = safeString(row['מס.ספק'] || row['מספר ספק'] || '0');
-                    let web = safeString(row['Web Site'] || row['אתר']);
-                    if (web && !web.startsWith('http')) web = 'https://' + web;
+                vendors = jsonData.map((row, idx) => {
+                    const id = String(row['מס.ספק'] || row['מספר ספק'] || idx);
+                    const cats = Object.keys(categoriesStructure);
+                    const chosenCat = cats[idx % cats.length];
+                    const chosenSub = categoriesStructure[chosenCat][idx % categoriesStructure[chosenCat].length];
+
                     return {
                         id: id,
-                        name: safeString(row['שם ספק'] || row['שם'] || 'ספק כללי'),
-                        city: safeString(row['עיר'] || '—'),
-                        phone: safeString(row['טלפון']),
-                        email: safeString(row['e-mail'] || row['אימייל']),
-                        group: safeString(row['תחום עיסוק'] || row['תאור סוג ספק'] || 'כללי'),
-                        region: row['עיר'] && ['חיפה','קריות','עכו','נתניה','חדרה'].some(n => String(row['עיר']).includes(n)) ? 'צפון' : (row['עיר'] && ['באר שבע','אשדוד','אילת'].some(s => String(row['עיר']).includes(s)) ? 'דרום' : 'מרכז'),
-                        dealType: row['סוג עסקה'] || (id % 3 === 0 ? 'שוטף + 30' : id % 3 === 1 ? 'שוטף + 60' : 'נותן שירות'),
-                        products: row['מוצרים'] ? safeString(row['מוצרים']).split(',') : ['ציוד והספקה'],
-                        rating: parseInt(row['דירוג']) || 5,
-                        approvedContact: safeString(row['איש קשר'] || 'לא הוגדר'),
-                        website: web,
-                        fullAddress: safeString(row['כתובת']),
-                        openDate: row['תאריך פתיחה'] ? safeString(row['תאריך פתיחה']) : '—',
-                        status: row['סטטוס'] || 'פעיל'
+                        name: String(row['שם ספק'] || 'ספק כללי'),
+                        city: String(row['עיר'] || '—'),
+                        phone: String(row['טלפון'] || ''),
+                        group: chosenCat,
+                        subGroup: chosenSub,
+                        region: 'מרכז',
+                        dealType: 'שוטף + 30',
+                        rating: 5,
+                        approvedContact: String(row['איש קשר'] || 'לא הוגדר'),
+                        status: 'פעיל',
+                        notes: [],
+                        reviews: []
                     };
                 });
-                try { if(localStorage.getItem('cached_vendors_v5')) vendors = JSON.parse(localStorage.getItem('cached_vendors_v5')); } catch(e){}
+                if(localStorage.getItem('cached_vendors_v6')) {
+                    vendors = JSON.parse(localStorage.getItem('cached_vendors_v6'));
+                }
             }
-        } catch (e) { 
-            console.error("שגיאה בטעינת האקסל:", e); 
-        } finally {
-            if (currentUser) {
-                showMainApp();
-            } else {
-                document.getElementById('loginWrapper').style.display = 'flex';
-                document.getElementById('mainAppContainer').style.display = 'none';
-            }
-        }
+        } catch (e) { console.error(e); }
+        if (currentUser) showMainApp();
     }
 
     function showMainApp() {
         document.getElementById('loginWrapper').style.display = 'none';
         document.getElementById('mainAppContainer').style.display = 'block';
         document.getElementById('lblUserName').innerText = currentUser.name;
-        document.getElementById('lblUserRole').innerText = currentUser.title;
+        document.getElementById('lblUserRole').innerText = currentUser.role;
 
-        // הגדרת נראות רכיבים לפי סוג הרשאה
-        if(currentUser.role === 'מנהל' || currentUser.role === 'מנהל על') {
-            document.getElementById('navRequests').style.display = 'inline-block';
-            document.getElementById('btnExportExcel').style.display = 'inline-flex';
-        } else {
-            document.getElementById('navRequests').style.display = 'none';
-            document.getElementById('btnExportExcel').style.display = 'none';
-        }
+        const isManager = currentUser.role === 'מנהל' || currentUser.role === 'מנהל על';
+        document.getElementById('navRequests').style.display = isManager ? 'inline-block' : 'none';
+        document.getElementById('btnExportExcel').style.display = isManager ? 'inline-flex' : 'none';
+        document.getElementById('navUsers').style.display = currentUser.role === 'מנהל על' ? 'inline-block' : 'none';
+        document.getElementById('navChat').style.display = currentUser.role === 'אורח' ? 'none' : 'inline-block';
 
-        if(currentUser.role === 'מנהל על') {
-            document.getElementById('navUsers').style.display = 'inline-block';
-            renderUsersTable();
-        } else {
-            document.getElementById('navUsers').style.display = 'none';
-        }
-
-        buildCategoryFilter();
-        updateRequestBadge();
+        buildCategoryFilters();
         renderVendors();
     }
 
-    function handleLogout() { try{sessionStorage.removeItem('active_user');}catch(e){} window.location.reload(); }
+    function buildCategoryFilters() {
+        const catSelect = document.getElementById('categoryFilter');
+        const parentSelect = document.getElementById('parentCatSelect');
+        const userCatRestrict = document.getElementById('addUserCategoryRestriction');
+        
+        if(!catSelect) return;
+        catSelect.innerHTML = '<option value="all">כל הקטגוריות</option>';
+        parentSelect.innerHTML = '<option value="">--- יצירת קטגוריה ראשית חדשה ---</option>';
+        userCatRestrict.innerHTML = '<option value="all">הכל - ללא הגבלה</option>';
 
-    function buildCategoryFilter() {
-        const categories = [...new Set(vendors.map(v => v.group))].filter(Boolean);
-        const select = document.getElementById('categoryFilter');
-        if(!select) return;
-        select.innerHTML = '<option value="all">כל הקטגוריות</option>';
-        categories.forEach(cat => {
-            const opt = document.createElement('option'); opt.value = cat; opt.innerText = cat; select.appendChild(opt);
+        Object.keys(categoriesStructure).forEach(cat => {
+            catSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            parentSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            userCatRestrict.innerHTML += `<option value="${cat}">${cat}</option>`;
         });
+        updateSubCategoryFilter();
     }
 
-    function toggleFavorite(id, event) {
-        event.stopPropagation();
-        if(currentUser.role === 'אורח') return; // אורח לא יכול לשמור מועדפים קבועים
-        if(favorites.includes(id)) { favorites = favorites.filter(f => f !== id); } 
-        else { favorites.push(id); }
-        localStorage.setItem('dror_favorites', JSON.stringify(favorites));
-        renderVendors(false);
+    function updateSubCategoryFilter() {
+        const cat = document.getElementById('categoryFilter').value;
+        const subSelect = document.getElementById('subCategoryFilter');
+        subSelect.innerHTML = '<option value="all">כל התתי-קטגוריות</option>';
+        if(cat !== 'all' && categoriesStructure[cat]) {
+            categoriesStructure[cat].forEach(sub => {
+                subSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+            });
+        }
     }
 
     function renderVendors(append = false) {
         const grid = document.getElementById('vendorsGrid');
         if (!grid) return;
-        
-        const searchInput = document.getElementById('searchInput');
-        const query = searchInput ? searchInput.value.toLowerCase() : '';
-        
-        const catSelect = document.getElementById('categoryFilter');
-        const selectedCat = catSelect ? catSelect.value : 'all';
-        
-        const regSelect = document.getElementById('regionFilter');
-        const selectedReg = regSelect ? regSelect.value : 'all';
-
         if (!append) { grid.innerHTML = ''; visibleCount = itemsToShow; }
 
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const selectedCat = document.getElementById('categoryFilter').value;
+        const selectedSub = document.getElementById('subCategoryFilter').value;
+        const selectedReg = document.getElementById('regionFilter').value;
+
         let filtered = vendors.filter(v => {
-            const matchesSearch = v.name.toLowerCase().includes(query) || v.id.includes(query) || v.city.toLowerCase().includes(query) || v.fullAddress.toLowerCase().includes(query);
+            // סינון לפי הגבלת קטגוריה של המשתמש המחובר
+            if(currentUser.allowedCategory !== 'all' && v.group !== currentUser.allowedCategory) return false;
+            
+            // סינון ספקים לא פעילים עבור משתמשים רגילים ואורחים
+            const isUserAdmin = currentUser.role === 'מנהל' || currentUser.role === 'מנהל על';
+            if(v.status === 'לא פעיל' && !isUserAdmin) return false;
+
+            const matchesSearch = v.name.toLowerCase().includes(query) || v.id.includes(query) || v.city.toLowerCase().includes(query);
             const matchesCat = selectedCat === 'all' || v.group === selectedCat;
+            const matchesSub = selectedSub === 'all' || v.subGroup === selectedSub;
             const matchesReg = selectedReg === 'all' || v.region === selectedReg;
             const matchesMode = currentMode === 'all' || favorites.includes(v.id);
-            return matchesSearch && matchesCat && matchesReg && matchesMode;
+
+            return matchesSearch && matchesCat && matchesSub && matchesReg && matchesMode;
         });
 
-        const counter = document.getElementById('statsCounter');
-        if(counter) counter.innerText = `נמצאו ${filtered.length.toLocaleString()} ספקים`;
+        document.getElementById('statsCounter').innerText = `נמצאו ${filtered.length} ספקים`;
         
-        const chunk = filtered.slice(append ? grid.children.length : 0, visibleCount);
-
-        chunk.forEach((vendor) => {
-            const actualIndex = vendors.indexOf(vendor);
+        filtered.slice(append ? grid.children.length : 0, visibleCount).forEach(vendor => {
+            const actualIdx = vendors.indexOf(vendor);
             const card = document.createElement('div');
-            const isFrozen = vendor.status === 'מוקפא';
-            card.className = `card ${isFrozen ? 'frozen' : ''}`;
-            card.setAttribute('onclick', `openProfileModal(${actualIndex}, event)`);
+            card.className = `card ${vendor.status === 'מוקפא' || vendor.status === 'לא פעיל' ? 'frozen' : ''}`;
+            card.setAttribute('onclick', `openProfileModal(${actualIdx})`);
 
-            let starsHtml = '⭐'.repeat(vendor.rating);
-            const isFav = favorites.includes(vendor.id);
-            let whatsappUrl = `https://wa.me/${vendor.phone ? vendor.phone.replace(/[- ]/g, '') : ''}`;
-            const isGuest = currentUser && currentUser.role === 'אורח';
+            // חישוב ממוצע דירוגים
+            let avgRating = vendor.rating;
+            if(vendor.reviews && vendor.reviews.length > 0) {
+                const sum = vendor.reviews.reduce((acc, curr) => acc + curr.rating, 0);
+                avgRating = Math.round(sum / vendor.reviews.length);
+            }
 
             card.innerHTML = `
-                <div style="pointer-events:none;">
+                <div>
                     <div class="card-header">
-                        <div style="flex:1;">
-                            <div class="vendor-name" style="text-align: right; direction: rtl;">
-                                <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${vendor.id}', event)" style="pointer-events:auto; display: ${isGuest ? 'none' : 'inline-block'}"><i class="fa-solid fa-star"></i></button>
+                        <div>
+                            <div class="vendor-name">
+                                ${currentUser.role !== 'אורח' ? `<button class="fav-btn ${favorites.includes(vendor.id)?'active':''}" onclick="event.stopPropagation(); toggleFavorite('${vendor.id}')">★</button>`:''}
                                 ${vendor.name}
                             </div>
-                            <div class="vendor-id">מספר: #${vendor.id}</div>
-                            <div class="rating-stars">${starsHtml}</div>
+                            <div class="vendor-id">#${vendor.id} | ${vendor.group} -> ${vendor.subGroup || 'כללי'}</div>
+                            <div class="rating-stars">${'⭐'.repeat(avgRating)}</div>
                         </div>
-                        <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
-                            <span class="badge ${isFrozen ? 'badge-frozen' : 'badge-active'}">${vendor.status || 'פעיל'}</span>
-                            <span class="badge badge-deal">${vendor.dealType}</span>
-                        </div>
+                        <span class="badge ${vendor.status === 'פעיל'?'badge-active': vendor.status === 'מוקפא'?'badge-frozen':'badge-pending'}">${vendor.status}</span>
                     </div>
                     <div class="vendor-body">
-                        <div class="vendor-info"><i class="fa-solid fa-location-dot"></i> <strong>עיר:</strong> ${vendor.city}</div>
-                        <div class="vendor-info"><i class="fa-solid fa-user-tie"></i> <strong>איש קשר:</strong> ${vendor.approvedContact}</div>
+                        <div class="vendor-info"><i class="fa-solid fa-location-dot"></i> העיר ${vendor.city}</div>
+                        <div class="vendor-info"><i class="fa-solid fa-user"></i> קשר: ${vendor.approvedContact}</div>
                     </div>
                 </div>
-                <div class="action-buttons" onclick="event.stopPropagation();">
-                    <a href="tel:${vendor.phone}" class="action-btn ${(!vendor.phone || isFrozen || isGuest) ? 'disabled' : ''}" style="background:#dcfce7;"><i class="fa-solid fa-phone" style="color:var(--success)"></i> חיוג</a>
-                    <a href="${whatsappUrl}" target="_blank" class="action-btn ${(!vendor.phone || isFrozen || isGuest) ? 'disabled' : ''}" style="background:#e8f5e9;"><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> הודעה</a>
-                    ${vendor.website ? `<a href="${vendor.website}" target="_blank" class="action-btn ${isFrozen ? 'disabled' : ''}"><i class="fa-solid fa-globe" style="color:var(--primary)"></i> אתר</a>` : ''}
-                    <button class="action-btn ${(isFrozen || isGuest) ? 'disabled' : ''}" onclick="openFeedbackModal(${actualIndex})"><i class="fa-solid fa-user-plus" style="color:var(--warning)"></i> עדכון</button>
-                </div>
-                <div class="admin-actions" style="display: ${currentUser && (currentUser.role === 'מנהל' || currentUser.role === 'מנהל על') ? 'flex' : 'none'}" onclick="event.stopPropagation();">
-                    <button class="action-btn" style="background:var(--primary); color:white; width:100%;" onclick="openAdminModal(${actualIndex})"><i class="fa-solid fa-user-gear"></i> הגדרות מנהל</button>
+                <div class="admin-actions" style="display: ${currentUser.role==='מנהל'||currentUser.role==='מנהל על'?'flex':'none'}" onclick="event.stopPropagation();">
+                    <button class="action-btn" style="background:var(--primary); color:white; width:100%;" onclick="openAdminModal(${actualIdx})"><i class="fa-solid fa-gear"></i> הגדרות ניהול</button>
                 </div>
             `;
             grid.appendChild(card);
         });
-
-        const loadMoreBtn = document.getElementById('loadMoreBtn');
-        if(loadMoreBtn) loadMoreBtn.style.display = grid.children.length < filtered.length ? 'block' : 'none';
     }
 
-    function loadMore() { visibleCount += itemsToShow; renderVendors(true); }
-    function resetAndFilter() { renderVendors(false); }
-
-    function changeLayout(type) {
-        currentLayout = type;
-        const grid = document.getElementById('vendorsGrid');
-        if(!grid) return;
-        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-        if(type === 'grid') { grid.className = 'grid-view'; document.getElementById('viewGridBtn').classList.add('active'); } 
-        else { grid.className = 'list-view'; document.getElementById('viewListBtn').classList.add('active'); }
-        renderVendors(false);
+    function toggleFavorite(id) {
+        if(favorites.includes(id)) favorites = favorites.filter(f=>f!==id); else favorites.push(id);
+        localStorage.setItem('dror_favorites', JSON.stringify(favorites)); renderVendors();
     }
 
-    function openProfileModal(index, event) {
+    function openProfileModal(index) {
+        currentOpenedVendorIndex = index;
         const vendor = vendors[index];
         document.getElementById('profTitle').innerText = vendor.name;
-        document.getElementById('profBadge').innerText = vendor.dealType;
-        let wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(vendor.fullAddress || vendor.city)}`;
+        document.getElementById('profBadge').innerText = vendor.status;
 
         document.getElementById('profileDetails').innerHTML = `
-            <div class="profile-row"><strong>סטטוס במערכת:</strong> <span style="font-weight:bold; color:${vendor.status === 'מוקפא' ? 'var(--danger)' : 'var(--success)'}">${vendor.status || 'פעיל'}</span></div>
-            <div class="profile-row"><strong>מספר ספק / ח.פ:</strong> <span>${vendor.id}</span></div>
-            <div class="profile-row"><strong>תחום עיסוק קבוע:</strong> <span>${vendor.group}</span></div>
+            <div class="profile-row"><strong>קטגוריה ראשית:</strong> <span>${vendor.group}</span></div>
+            <div class="profile-row"><strong>תת קטגוריה:</strong> <span>${vendor.subGroup || 'כללי'}</span></div>
             <div class="profile-row"><strong>עיר:</strong> <span>${vendor.city}</span></div>
-            <div class="profile-row"><strong>כתובת מלאה:</strong> <span>${vendor.fullAddress || 'לא הוגדרה'}</span></div>
+            <div class="profile-row"><strong>טלפון המשרד:</strong> <span>${vendor.phone || 'אין מספר'}</span></div>
             <div class="profile-row"><strong>איש קשר מאושר:</strong> <span>${vendor.approvedContact}</span></div>
-            <div class="profile-row"><strong>טלפון:</strong> <span>${vendor.phone || 'אין'}</span></div>
-            <div class="profile-row"><strong>אימייל:</strong> <span>${vendor.email || 'אין'}</span></div>
-            <div class="profile-row"><strong>תאריך פתיחה במערכת:</strong> <span>${vendor.openDate}</span></div>
-            <div style="margin-top:15px; display:flex; gap:10px;">
-                <a href="${wazeUrl}" target="_blank" class="action-btn" style="background:#33ccff; color:white; flex:1; text-align:center;"><i class="fa-brands fa-waze"></i> ניווט ב-Waze</a>
-            </div>
         `;
+
+        // הגבלת תצוגה לאורח
+        if(currentUser.role === 'אורח') {
+            document.getElementById('addNoteBox').style.display = 'none';
+            document.getElementById('addReviewBox').style.display = 'none';
+        } else {
+            document.getElementById('addNoteBox').style.display = 'flex';
+            document.getElementById('addReviewBox').style.display = 'block';
+        }
+
+        renderNotes();
+        renderReviews();
         document.getElementById('vendorProfileModal').style.display = 'flex';
     }
-    
+
     function closeProfileModal() { document.getElementById('vendorProfileModal').style.display = 'none'; }
     function closeProfileModalOnOutsideClick(e) { if(e.target.id === 'vendorProfileModal') closeProfileModal(); }
-    
-    function openFeedbackModal(index) { document.getElementById('feedbackVendorIndex').value = index; document.getElementById('userFeedbackModal').style.display = 'flex'; }
-    function closeFeedbackModal() { document.getElementById('userFeedbackModal').style.display = 'none'; }
 
-    function submitFeedback() {
-        const idx = document.getElementById('feedbackVendorIndex').value;
-        const contactName = document.getElementById('newUserContact').value.trim();
-        const contactPhone = document.getElementById('newUserPhone').value.trim();
-        vendors[idx].rating = parseInt(document.getElementById('userRating').value);
-
-        if(contactName) {
-            requests.push({ id: Date.now(), vendorIndex: idx, vendorName: vendors[idx].name, proposedContact: contactName + (contactPhone ? ` (${contactPhone})` : '') });
-            localStorage.setItem('dror_contact_reqs', JSON.stringify(requests));
-            updateRequestBadge();
-            alert("הבקשה נשלחה לאישור מנהל!");
-        } else { alert("הדירוג עודכן בהצלחה!"); }
-        localStorage.setItem('cached_vendors_v5', JSON.stringify(vendors));
-        closeFeedbackModal(); renderVendors(false);
-    }
-
-    function renderRequests() {
-        const container = document.getElementById('requestsGrid'); if(!container) return;
+    /* מנגנון פתקים פנימיים */
+    function renderNotes() {
+        const v = vendors[currentOpenedVendorIndex];
+        const container = document.getElementById('vendorNotesList');
         container.innerHTML = '';
-        document.getElementById('requestsStats').innerText = `ממתינות לאישור: ${requests.length} בקשות`;
-        requests.forEach((req, index) => {
-            const card = document.createElement('div'); card.className = 'card';
-            card.innerHTML = `
-                <div class="card-header"><div><div class="vendor-name">${req.vendorName}</div></div><span class="badge badge-pending">ממתין</span></div>
-                <div class="vendor-body"><p style="padding:8px; background:#f1f5f9; border-radius:6px; text-align: right;">${req.proposedContact}</p></div>
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                    <button class="action-btn" style="background:var(--success); color:white; flex:1;" onclick="approveContact(${index})">אשר והוסף</button>
-                    <button class="action-btn" style="background:var(--danger); color:white; flex:1;" onclick="rejectContact(${index})">דחה</button>
+        if(!v.notes) v.notes = [];
+        v.notes.forEach((note, idx) => {
+            const isOwner = note.user === currentUser.username;
+            const isAdmin = currentUser.role === 'מנהל' || currentUser.role === 'מנהל על';
+            container.innerHTML += `
+                <div class="note-item">
+                    <strong>${note.user}:</strong> ${note.text}
+                    ${isOwner || isAdmin ? `<button class="delete-btn" onclick="deleteNote(${idx})">🗑️</button>` : ''}
                 </div>
             `;
-            container.appendChild(card);
         });
     }
 
-    function approveContact(index) {
-        const req = requests[index];
-        if(vendors[req.vendorIndex]) vendors[req.vendorIndex].approvedContact = req.proposedContact;
-        requests.splice(index, 1);
-        localStorage.setItem('dror_contact_reqs', JSON.stringify(requests));
-        localStorage.setItem('cached_vendors_v5', JSON.stringify(vendors));
-        updateRequestBadge(); renderRequests();
+    function addNoteToVendor() {
+        const txt = document.getElementById('newNoteInput').value.trim();
+        if(!txt) return;
+        if(!vendors[currentOpenedVendorIndex].notes) vendors[currentOpenedVendorIndex].notes = [];
+        vendors[currentOpenedVendorIndex].notes.push({ user: currentUser.username, text: txt });
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        document.getElementById('newNoteInput').value = ''; renderNotes();
     }
-    
-    function rejectContact(index) { requests.splice(index, 1); localStorage.setItem('dror_contact_reqs', JSON.stringify(requests)); updateRequestBadge(); renderRequests(); }
-    
-    function updateRequestBadge() { const badge = document.getElementById('reqCountBadge'); if(!badge) return; if(requests.length > 0 && (currentUser.role === 'מנהל' || currentUser.role === 'מנהל על')) { badge.innerText = requests.length; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; } }
 
+    function deleteNote(idx) {
+        vendors[currentOpenedVendorIndex].notes.splice(idx, 1);
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        renderNotes();
+    }
+
+    /* מנגנון ביקורות וחוות דעת */
+    function renderReviews() {
+        const v = vendors[currentOpenedVendorIndex];
+        const container = document.getElementById('vendorReviewsList');
+        container.innerHTML = '';
+        if(!v.reviews) v.reviews = [];
+        v.reviews.forEach(rev => {
+            container.innerHTML += `
+                <div class="review-item">
+                    <strong>${rev.user}</strong> (${'⭐'.repeat(rev.rating)})
+                    <p>${rev.comment}</p>
+                </div>
+            `;
+        });
+    }
+
+    function addReviewToVendor() {
+        const comment = document.getElementById('newReviewComment').value.trim();
+        const rating = parseInt(document.getElementById('newReviewRating').value);
+        if(!comment) return;
+        if(!vendors[currentOpenedVendorIndex].reviews) vendors[currentOpenedVendorIndex].reviews = [];
+        vendors[currentOpenedVendorIndex].reviews.push({ user: currentUser.name, rating: rating, comment: comment });
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        document.getElementById('newReviewComment').value = ''; renderReviews(); renderVendors();
+    }
+
+    /* מנגנון ניהול קטגוריות ותתי קטגוריות */
+    function addCategoryStructure() {
+        const pCat = document.getElementById('parentCatSelect').value;
+        const newCat = document.getElementById('newCatName').value.trim();
+        const subCat = document.getElementById('newSubCatName').value.trim();
+
+        if(!pCat && newCat) {
+            if(!categoriesStructure[newCat]) categoriesStructure[newCat] = [];
+            if(subCat) categoriesStructure[newCat].push(subCat);
+        } else if(pCat && subCat) {
+            if(!categoriesStructure[pCat].includes(subCat)) categoriesStructure[pCat].push(subCat);
+        } else {
+            alert("אנא מלא את השדות בהתאם להוראות"); return;
+        }
+
+        localStorage.setItem('dror_categories_struct', JSON.stringify(categoriesStructure));
+        document.getElementById('newCatName').value = ''; document.getElementById('newSubCatName').value = '';
+        alert("הקטגוריה נשמרה בהצלחה!"); buildCategoryFilters();
+    }
+
+    /* מנגנון ניהול משתמשים והרשאות קטגוריות */
+    function createNewUser() {
+        const name = document.getElementById('addFullName').value.trim();
+        const user = document.getElementById('addUsername').value.trim();
+        const pass = document.getElementById('addPassword').value.trim();
+        const role = document.getElementById('addUserRole').value;
+        const cat = document.getElementById('addUserCategoryRestriction').value;
+
+        if(!name || !user || !pass) { alert("נא למלא את כל שדות החובה"); return; }
+        systemUsers.push({ "שם מלא": name, "שם משתמש": user, "סיסמה": pass, "הרשאה": role, "קטגוריה": cat });
+        localStorage.setItem('dror_system_users_v6', JSON.stringify(systemUsers));
+        renderUsersTable();
+        alert("משתמש נוצר בהצלחה!");
+    }
+
+    function renderUsersTable() {
+        const body = document.getElementById('usersTableBody'); if(!body) return;
+        body.innerHTML = '';
+        systemUsers.forEach((u, index) => {
+            body.innerHTML += `
+                <tr>
+                    <td>${u['שם מלא']}</td>
+                    <td>${u['שם משתמש']}</td>
+                    <td>${u['הרשאה']}</td>
+                    <td>${u['קטגוריה'] === 'all' ? 'הכל' : u['קטגוריה']}</td>
+                    <td>${u['הרשאה'] !== 'מנהל על' ? `<button class="action-btn" style="color:red;" onclick="deleteUser(${index})">מחק</button>`:'—'}</td>
+                </tr>
+            `;
+        });
+    }
+    function deleteUser(idx) { systemUsers.splice(idx,1); localStorage.setItem('dror_system_users_v6',JSON.stringify(systemUsers)); renderUsersTable(); }
+
+    /* מערכת הודעות וצ'אט פנימי */
+    function loadChatInterface() {
+        const sidebar = document.getElementById('chatUsersList');
+        sidebar.innerHTML = '';
+        systemUsers.forEach((u, idx) => {
+            if(u['שם משתמש'] === currentUser.username) return;
+            sidebar.innerHTML += `<div class="chat-user-item" onclick="selectChatUser(${idx}, this)">${u['שם מלא']} (${u['הרשאה']})</div>`;
+        });
+    }
+
+    function selectChatUser(idx, element) {
+        document.querySelectorAll('.chat-user-item').forEach(i=>i.classList.remove('active'));
+        element.classList.add('active');
+        activeChatUserIndex = idx;
+        const targetUser = systemUsers[idx];
+        document.getElementById('chatHeaderTitle').innerText = `שיחה עם: ${targetUser['שם מלא']}`;
+        renderChatMessages();
+    }
+
+    function renderChatMessages() {
+        const container = document.getElementById('chatMessagesContainer');
+        container.innerHTML = '';
+        if(activeChatUserIndex === null) return;
+        const targetUser = systemUsers[activeChatUserIndex];
+
+        const filteredMsg = chatMessages.filter(m => 
+            (m.from === currentUser.username && m.to === targetUser['שם משתמש']) ||
+            (m.to === currentUser.username && m.from === targetUser['שם משתמש'])
+        );
+
+        filteredMsg.forEach(m => {
+            const side = m.from === currentUser.username ? 'sent' : 'received';
+            container.innerHTML += `<div class="message-bubble ${side}">${m.text}</div>`;
+        });
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatMessageInput');
+        const txt = input.value.trim();
+        if(!txt || activeChatUserIndex === null) return;
+        const targetUser = systemUsers[activeChatUserIndex];
+
+        chatMessages.push({ from: currentUser.username, to: targetUser['שם משתמש'], text: txt, time: Date.now() });
+        localStorage.setItem('dror_chat_messages', JSON.stringify(chatMessages));
+        input.value = ''; renderChatMessages();
+    }
+
+    /* ניהול אדמין על ספקים */
     function openAdminModal(index) {
         document.getElementById('adminEditIndex').value = index;
-        document.getElementById('admStatus').value = vendors[index].status || 'פעיל';
-        document.getElementById('admName').value = vendors[index].name;
-        document.getElementById('admDealType').value = vendors[index].dealType;
-        document.getElementById('admWebsite').value = vendors[index].website || '';
+        const v = vendors[index];
+        document.getElementById('admStatus').value = v.status;
+        document.getElementById('admName').value = v.name;
+        document.getElementById('admDealType').value = v.dealType;
+        document.getElementById('admWebsite').value = v.website || '';
+
+        const catSel = document.getElementById('admCategory');
+        catSel.innerHTML = '';
+        Object.keys(categoriesStructure).forEach(c => catSel.innerHTML += `<option value="${c}">${c}</option>`);
+        catSel.value = v.group;
+        updateAdminModalSubCats();
+        document.getElementById('admSubCategory').value = v.subGroup || '';
         document.getElementById('adminVendorModal').style.display = 'flex';
     }
-    
+
+    function updateAdminModalSubCats() {
+        const c = document.getElementById('admCategory').value;
+        const sub = document.getElementById('admSubCategory'); sub.innerHTML = '';
+        if(categoriesStructure[c]) {
+            categoriesStructure[c].forEach(s => sub.innerHTML += `<option value="${s}">${s}</option>`);
+        }
+    }
+
     function closeAdminModal() { document.getElementById('adminVendorModal').style.display = 'none'; }
     
     function saveAdminVendor() {
         const idx = document.getElementById('adminEditIndex').value;
         vendors[idx].status = document.getElementById('admStatus').value;
         vendors[idx].name = document.getElementById('admName').value;
+        vendors[idx].group = document.getElementById('admCategory').value;
+        vendors[idx].subGroup = document.getElementById('admSubCategory').value;
         vendors[idx].dealType = document.getElementById('admDealType').value;
-        vendors[idx].website = document.getElementById('admWebsite').value;
-        localStorage.setItem('cached_vendors_v5', JSON.stringify(vendors));
-        closeAdminModal(); renderVendors(false);
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        closeAdminModal(); renderVendors();
     }
 
-    /* פונקציות ניהול משתמשים (מנהל על בלבד) */
-    function createNewUser() {
-        const fullName = document.getElementById('addFullName').value.trim();
-        const username = document.getElementById('addUsername').value.trim();
-        const phone = document.getElementById('addPhone').value.trim();
-        const title = document.getElementById('addTitle').value.trim();
-        const password = document.getElementById('addPassword').value.trim();
-
-        if(!fullName || !username || !password) {
-            alert("חובה למלא שם מלא, שם משתמש וסיסמה!");
-            return;
-        }
-
-        // בדיקה ששם המשתמש לא תפוס
-        if(systemUsers.some(u => u['שם משתמש'].toLowerCase() === username.toLowerCase())) {
-            alert("שם המשתמש הזה כבר תפוס!");
-            return;
-        }
-
-        const newUser = {
-            "שם מלא": fullName,
-            "שם משתמש": username,
-            "טלפון": phone || "—",
-            "תפקיד": title || "מנהל",
-            "סיסמה": password,
-            "הרשאה": "מנהל"
-        };
-
-        systemUsers.push(newUser);
-        localStorage.setItem('dror_system_users', JSON.stringify(systemUsers));
-        
-        // איפוס שדות
-        document.getElementById('addFullName').value = '';
-        document.getElementById('addUsername').value = '';
-        document.getElementById('addPhone').value = '';
-        document.getElementById('addTitle').value = '';
-        document.getElementById('addPassword').value = '';
-
-        alert("המנהל החדש נוסף בהצלחה!");
-        renderUsersTable();
-    }
-
-    function removeUser(index) {
-        if(systemUsers[index]['הרשאה'] === 'מנהל על') {
-            alert("לא ניתן למחוק את מנהל העל הראשי!");
-            return;
-        }
-        if(confirm(`האם אתה בטוח שברצונך למחוק את ${systemUsers[index]['שם מלא']}?`)) {
-            systemUsers.splice(index, 1);
-            localStorage.setItem('dror_system_users', JSON.stringify(systemUsers));
-            renderUsersTable();
-        }
-    }
-
-    function renderUsersTable() {
-        const tbody = document.getElementById('usersTableBody');
-        if(!tbody) return;
-        tbody.innerHTML = '';
-
-        systemUsers.forEach((user, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${user['שם מלא']}</td>
-                <td>${user['שם משתמש']}</td>
-                <td>${user['טלפון']}</td>
-                <td>${user['תפקיד']}</td>
-                <td><span class="badge" style="background:${user['הרשאה'] === 'מנהל על' ? '#db2777' : 'var(--primary)'}; color:white;">${user['הרשאה']}</span></td>
-                <td>
-                    ${user['הרשאה'] !== 'מנהל על' ? `<button class="action-btn" style="background:var(--danger); color:white; padding:4px 8px;" onclick="removeUser(${index})"><i class="fa-solid fa-trash"></i> מחק</button>` : '—'}
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
+    function resetAndFilter() { renderVendors(false); }
+    function changeLayout(type) { currentLayout = type; document.getElementById('vendorsGrid').className = type==='grid'?'grid-view':'list-view'; renderVendors(); }
 
     function switchView(view) {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         
-        if(view === 'vendors') {
-            currentMode = 'all';
+        if(view === 'vendors' || view === 'favorites') {
+            currentMode = view === 'favorites' ? 'favorites' : 'all';
             document.getElementById('vendorsSection').classList.add('active');
-            document.getElementById('navVendors').classList.add('active');
-            renderVendors(false);
-        } else if(view === 'favorites') {
-            currentMode = 'favorites';
-            document.getElementById('vendorsSection').classList.add('active');
-            document.getElementById('navFavs').classList.add('active');
-            renderVendors(false);
-        } else if(view === 'requests') {
-            document.getElementById('requestsSection').classList.add('active');
-            document.getElementById('navRequests').classList.add('active');
-            renderRequests();
+            document.getElementById(view==='vendors'?'navVendors':'navFavs').classList.add('active');
+            renderVendors();
+        } else if(view === 'chat') {
+            document.getElementById('chatSection').classList.add('active');
+            document.getElementById('navChat').classList.add('active');
+            loadChatInterface();
         } else if(view === 'users') {
             document.getElementById('usersSection').classList.add('active');
             document.getElementById('navUsers').classList.add('active');
             renderUsersTable();
         }
-    }
-
-    function exportToExcel() {
-        const ws = XLSX.utils.json_to_sheet(vendors);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "ספקים מעודכן");
-        XLSX.writeFile(wb, "ספקים מעודכן.xlsx");
     }
 </script>
 </body>
