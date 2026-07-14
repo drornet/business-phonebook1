@@ -3,657 +3,1520 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ספר טלפונים דיגיטלי - ספקים ושותפים</title>
-    <!-- Tailwind CSS & FontAwesome -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>מערכת ניהול ומידע ספקים - דרור חינוך</title>
+    <!-- ספריות חיצוניות -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
-        body {
-            font-family: 'Assistant', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --frozen: #94a3b8;
+            --chat-self: #dbeafe;
+            --chat-other: #f1f5f9;
         }
-        .glass {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
+
+        /* מצב כהה */
+        body.dark-mode {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --chat-self: #1e3a8a;
+            --chat-other: #334155;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.2s, border-color 0.2s; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; }
+        
+        .container { max-width: 1300px; margin: 0 auto; display: none; }
+        
+        /* מסך התחברות */
+        .login-wrapper { display: flex; justify-content: center; align-items: center; min-height: 85vh; }
+        .login-card { background: var(--card-bg); padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 420px; border-top: 5px solid var(--primary); text-align: center; }
+        .login-card h2 { color: var(--primary); margin-bottom: 8px; font-size: 24px; }
+        .login-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 25px; }
+        
+        header { text-align: center; margin-bottom: 25px; padding: 20px; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); border-bottom: 4px solid var(--primary); position: relative; }
+        header h1 { color: var(--primary); font-size: 28px; margin-bottom: 5px; }
+        
+        .header-controls { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 12px; }
+        .user-welcome-badge { display: flex; align-items: center; gap: 12px; background: var(--border); padding: 8px 15px; border-radius: 30px; font-size: 14px; font-weight: 600; }
+        
+        .theme-toggle { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+
+        .main-nav { display: flex; gap: 10px; margin-bottom: 20px; background: var(--border); padding: 6px; border-radius: 12px; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 120px; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; background: transparent; color: var(--text); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; }
+        .nav-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .badge-dot { position: absolute; top: 5px; right: 10px; width: 10px; height: 10px; background-color: var(--danger); border-radius: 50%; display: none; }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        
+        .controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .search-box { flex: 1; min-width: 260px; position: relative; }
+        .search-box input { width: 100%; padding: 12px 45px 12px 15px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; outline: none; text-align: right; background-color: var(--card-bg); color: var(--text); }
+        .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .filter-select { padding: 12px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; background: var(--card-bg); color: var(--text); cursor: pointer; }
+        
+        .view-toggle-btns { display: flex; gap: 4px; background: var(--border); padding: 4px; border-radius: 10px; }
+        .toggle-btn { padding: 8px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; color: var(--text-muted); }
+        .toggle-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* לוח מודעות */
+        .bulletin-board { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 20px; }
+        .bulletin-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: var(--primary); }
+
+        /* דשבורד סטטיסטיקות */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .dashboard-card { background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 12px; text-align: center; }
+        .dashboard-card h3 { font-size: 24px; color: var(--primary); margin-bottom: 5px; }
+        .dashboard-card p { font-size: 13px; color: var(--text-muted); }
+
+        .smart-filters-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .smart-filter-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--primary); background: transparent; color: var(--primary); cursor: pointer; font-weight: 600; font-size: 13px; }
+        .smart-filter-btn.active { background: var(--primary); color: white; }
+
+        .stats-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .stats { font-size: 14px; color: var(--text-muted); font-weight: 600; }
+        
+        .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
+        .grid-view .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 18px; box-shadow: 0 2px 4px rgb(0 0 0 / 0.02); display: flex; flex-direction: column; justify-content: space-between; position: relative; transition: transform 0.2s; cursor: pointer; }
+        .grid-view .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .grid-view .card.frozen { background: rgba(148, 163, 184, 0.15); border-color: var(--frozen); }
+        
+        .list-view { display: flex; flex-direction: column; gap: 8px; }
+        .list-view .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; cursor: pointer; }
+        .list-view .card.frozen { background: rgba(148, 163, 184, 0.25); }
+
+        .card-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .vendor-name { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.4; display: flex; align-items: center; gap: 6px; }
+        .vendor-id { font-size: 12px; color: var(--text-muted); margin-top: 2px; text-align: right; }
+        
+        .badge { padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; }
+        .badge-deal { background: #e0f2fe; color: #0369a1; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-frozen { background: #cbd5e1; color: #475569; }
+        .badge-active { background: #dcfce7; color: #16a34a; }
+
+        .vendor-body { margin-bottom: 12px; text-align: right; }
+        .vendor-info { font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+        .vendor-info i { color: var(--primary); width: 14px; text-align: center; }
+
+        .rating-stars { color: #fbbf24; font-size: 14px; margin-top: 5px; text-align: right; }
+
+        .action-buttons { display: flex; gap: 6px; margin-top: auto; padding-top: 10px; flex-wrap: wrap; }
+        .action-btn { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); cursor: pointer; font-size: 12px; font-weight: 600; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: var(--text); display: inline-flex; }
+        .action-btn.disabled { pointer-events: none; opacity: 0.4; background: var(--border) !important; color: var(--text-muted) !important; }
+
+        .fav-btn { border: none; background: transparent; font-size: 18px; cursor: pointer; color: #cbd5e1; transition: color 0.2s; }
+        .fav-btn.active { color: #ffb020; }
+
+        .admin-actions { display: none; gap: 8px; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; width: 100%; }
+
+        /* סקשן צ'אט */
+        .chat-container { display: flex; flex-direction: column; height: 500px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .chat-bubble { max-width: 70%; padding: 10px 15px; border-radius: 12px; font-size: 14px; position: relative; }
+        .chat-bubble.self { align-self: flex-start; background: var(--chat-self); }
+        .chat-bubble.other { align-self: flex-end; background: var(--chat-other); }
+        .chat-meta { font-size: 10px; color: var(--text-muted); margin-top: 5px; display: block; text-align: left; }
+        .chat-input-area { display: flex; padding: 10px; border-top: 1px solid var(--border); gap: 10px; }
+        .chat-input-area input { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); outline: none; }
+
+        /* מודאלים */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
+        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 20px; width: 100%; max-width: 550px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        .form-group { margin-bottom: 12px; text-align: right; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-size: 14px; text-align: right; background-color: var(--bg); color: var(--text); }
+        
+        .password-container { position: relative; width: 100%; }
+        .password-container input { padding-left: 40px; }
+        .toggle-password-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted); font-size: 16px; z-index: 100; padding: 5px; }
+
+        .profile-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); font-size: 14px; direction: rtl; }
+        .profile-row strong { color: var(--text-muted); }
+
+        .user-table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: right; }
+        .user-table th, .user-table td { padding: 12px; border: 1px solid var(--border); font-size: 14px; }
+        .user-table th { background: var(--border); color: var(--text); font-weight: bold; }
+
+        /* רשימות פנימיות */
+        .inner-section { margin-top: 15px; border-top: 2px solid var(--border); padding-top: 15px; }
+        .inner-title { font-weight: bold; font-size: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; color: var(--primary); }
     </style>
 </head>
-<body class="p-4 md:p-8 text-gray-800">
+<body>
 
-    <div class="max-w-6xl mx-auto">
+<!-- מסך התחברות -->
+<div class="login-wrapper" id="loginWrapper">
+    <div class="login-card">
+        <i class="fa-solid fa-shield-halved" style="font-size: 45px; color: var(--primary); margin-bottom: 15px;"></i>
+        <h2>פורטל ספקים - דרור חינוך</h2>
+        <p>יש להקליד את פרטי החיבור או להיכנס כאורח</p>
+        <div id="loginStatusText" style="color:var(--danger); font-size:13px; margin-bottom:10px; font-weight:bold;"></div>
         
-        <!-- כותרת ראשית ומעבר מצבים -->
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div>
-                <h1 class="text-3xl font-extrabold text-indigo-900 flex items-center gap-2">
-                    <i class="fa-solid fa-address-book text-indigo-600"></i>
-                    ספר ספקים דיגיטלי
-                </h1>
-                <p class="text-gray-600 mt-1">ניהול, דירוג ויצירת קשר מהירה עם ספקי החברה</p>
+        <div class="form-group">
+            <label>שם משתמש / שם מלא</label>
+            <input type="text" id="loginUsername" placeholder="הקלד שם משתמש">
+        </div>
+        
+        <div class="form-group">
+            <label>סיסמה אישית</label>
+            <div class="password-container">
+                <input type="password" id="loginPassword" placeholder="••••••••">
+                <i class="fa-solid fa-eye toggle-password-icon" id="togglePasswordBtn"></i>
             </div>
-            
-            <!-- כפתור מעבר משתמש / מנהל -->
-            <button id="toggleViewBtn" onclick="toggleView()" class="glass px-5 py-2.5 rounded-full shadow-md font-semibold text-indigo-700 hover:bg-indigo-50 transition-all duration-300 flex items-center gap-2">
-                <i id="viewIcon" class="fa-solid fa-user-gear text-lg"></i>
-                <span id="viewText">מעבר לממשק מנהל</span>
-            </button>
-        </header>
+        </div>
+        
+        <button class="action-btn" id="submitLoginBtn" style="background: var(--primary); color: white; width: 100%; padding: 12px; font-size: 16px; margin-top: 15px;">התחבר</button>
+        
+        <div style="margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 15px;">
+            <button class="action-btn" id="guestLoginBtn" onclick="loginAsGuest()" style="background: var(--border); color: var(--text); width: 100%; padding: 10px; font-size: 14px;"><i class="fa-solid fa-user-secret"></i> כניסה מהירה כאורח (צפייה בלבד)</button>
+        </div>
+    </div>
+</div>
 
-        <!-- ========================================== -->
-        <!--             ממשק משתמש קצה                 -->
-        <!-- ========================================== -->
-        <main id="userView" class="space-y-6">
-            <!-- שורת חיפוש וסינון קטגוריות -->
-            <div class="glass p-5 rounded-2xl shadow-lg flex flex-col md:flex-row gap-4 items-center">
-                <div class="relative w-full md:w-1/3">
-                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-3.5 text-gray-400"></i>
-                    <input type="text" id="searchInput" oninput="renderUserList()" placeholder="חפש ספק, תחום או איש קשר..." class="w-full pr-11 pl-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                </div>
-                
-                <!-- רשימת קטגוריות לסינון מהיר (יוצגו רק קטגוריות פעילות!) -->
-                <div class="flex flex-wrap gap-2 w-full md:w-2/3" id="userCategoriesContainer">
-                    <!-- ייווצר דינמית -->
-                </div>
+<!-- המערכת המרכזית -->
+<div class="container" id="mainAppContainer">
+    <header>
+        <h1>מערכת ניהול ומידע ספקים - דרור חינוך</h1>
+        <div class="header-controls">
+            <button class="theme-toggle" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+            <div class="user-welcome-badge">
+                <span><i class="fa-solid fa-user-circle" style="color:var(--primary)"></i> שלום, <span id="lblUserName">—</span> (<span id="lblUserRole">—</span>)</span>
+                <button id="logoutBtn" style="border:none; background:transparent; color:var(--danger); cursor:pointer; font-weight:bold; margin-right:10px;"><i class="fa-solid fa-right-from-bracket"></i> התנתק</button>
             </div>
+        </div>
+    </header>
 
-            <!-- רשימת ספקים כרטיסיות -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="vendorsGrid">
-                <!-- ייווצר דינמית -->
-            </div>
-        </main>
-
-        <!-- ========================================== -->
-        <!--            ממשק מנהל פרודקטיבי             -->
-        <!-- ========================================== -->
-        <main id="adminView" class="hidden space-y-6">
-            
-            <!-- כרטיסי מידע מהיר (Stats Dashboard) -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="glass p-4 rounded-xl shadow flex items-center gap-4 border-r-4 border-indigo-600">
-                    <div class="p-3 bg-indigo-100 rounded-full text-indigo-600">
-                        <i class="fa-solid fa-truck-field text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">סה"כ ספקים</div>
-                        <div class="text-2xl font-bold" id="statTotalVendors">0</div>
-                    </div>
-                </div>
-                <div class="glass p-4 rounded-xl shadow flex items-center gap-4 border-r-4 border-emerald-600">
-                    <div class="p-3 bg-emerald-100 rounded-full text-emerald-600">
-                        <i class="fa-solid fa-folder text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">קטגוריות פעילות</div>
-                        <div class="text-2xl font-bold" id="statActiveCategories">0</div>
-                    </div>
-                </div>
-                <div class="glass p-4 rounded-xl shadow flex items-center gap-4 border-r-4 border-rose-500">
-                    <div class="p-3 bg-rose-100 rounded-full text-rose-600">
-                        <i class="fa-solid fa-folder-minus text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">מוסתרות (לא פעיל)</div>
-                        <div class="text-2xl font-bold" id="statInactiveCategories">0</div>
-                    </div>
-                </div>
-                <div class="glass p-4 rounded-xl shadow flex items-center gap-4 border-r-4 border-amber-500">
-                    <div class="p-3 bg-amber-100 rounded-full text-amber-500">
-                        <i class="fa-solid fa-star text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">ממוצע דירוגים</div>
-                        <div class="text-2xl font-bold" id="statAvgRating">0.0</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- אזור עבודה מפוצל (Split Screen לפרודוקטיביות מקסימלית) -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- עמודה ימנית: ניהול וסינון קטגוריות (פעיל/לא פעיל) -->
-                <div class="glass p-6 rounded-2xl shadow-lg space-y-6 h-fit">
-                    <div class="flex justify-between items-center border-b pb-3">
-                        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                            <i class="fa-solid fa-sliders text-indigo-600"></i>
-                            ניהול קטגוריות ונראות
-                        </h3>
-                    </div>
-                    
-                    <!-- הוספת קטגוריה חדשה -->
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-gray-500">הוסף קטגוריה חדשה</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="newCategoryInput" placeholder="שם קטגוריה..." class="flex-grow px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <button onclick="addNewCategory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-sm transition-all">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- רשימת הקטגוריות עם כפתור Toggle (פעיל/לא פעיל) -->
-                    <div class="space-y-3">
-                        <label class="text-xs font-bold text-gray-500">סטטוס קטגוריות (לחץ להסתרה/הצגה מהירה):</label>
-                        <div id="adminCategoriesContainer" class="space-y-2">
-                            <!-- ייווצר דינמית -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- עמודה מרכזית ושמאלית: ניהול ספקים מהיר -->
-                <div class="lg:col-span-2 space-y-6">
-                    
-                    <!-- טופס הוספה / עריכת ספק (סגור כברירת מחדל, נפתח בלחיצה/עריכה) -->
-                    <div class="glass p-5 rounded-2xl shadow-lg">
-                        <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleAddForm()">
-                            <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                <i class="fa-solid fa-user-plus text-indigo-600"></i>
-                                <span id="formTitle">הוספת ספק חדש</span>
-                            </h3>
-                            <i id="formChevron" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
-                        </div>
-                        
-                        <form id="vendorForm" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="hidden" id="editIndex">
-                            
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">שם הספק/החברה *</label>
-                                <input type="text" id="vendorName" required class="w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">קטגוריה *</label>
-                                <select id="vendorCategory" required class="w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500 bg-white">
-                                    <!-- יתמלא דינמית -->
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">איש קשר</label>
-                                <input type="text" id="vendorContact" class="w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">טלפון ליצירת קשר *</label>
-                                <input type="tel" id="vendorPhone" required class="w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">אימייל</label>
-                                <input type="email" id="vendorEmail" class="w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">דירוג התחלתי (1-5)</label>
-                                <input type="number" id="vendorRating" min="1" max="5" step="0.1" value="5" class="w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500">
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">הערות / מידע נוסף</label>
-                                <textarea id="vendorNotes" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500"></textarea>
-                            </div>
-
-                            <div class="md:col-span-2 flex justify-end gap-2">
-                                <button type="button" onclick="resetForm()" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">ביטול</button>
-                                <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">שמור ספק</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- טבלת ניהול ספקים מתקדמת ופרודקטיבית -->
-                    <div class="glass p-5 rounded-2xl shadow-lg overflow-x-auto">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-bold text-gray-800">רשימת ספקים במערכת</h3>
-                            <input type="text" id="adminSearchInput" oninput="renderAdminTable()" placeholder="חיפוש מהיר בטבלה..." class="px-3 py-1.5 text-xs rounded-lg border focus:ring-2 focus:ring-indigo-500 bg-white w-48">
-                        </div>
-                        
-                        <table class="w-full text-right border-collapse">
-                            <thead>
-                                <tr class="border-b-2 border-gray-100 text-xs text-gray-500 uppercase tracking-wider">
-                                    <th class="py-3 px-4 font-bold">שם הספק</th>
-                                    <th class="py-3 px-4 font-bold">קטגוריה</th>
-                                    <th class="py-3 px-4 font-bold">איש קשר וטלפון</th>
-                                    <th class="py-3 px-4 font-bold">דירוג ממוצע</th>
-                                    <th class="py-3 px-4 font-bold text-center">פעולות</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminTableBody" class="divide-y divide-gray-100 text-sm">
-                                <!-- ייווצר דינמית -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                </div>
-            </div>
-        </main>
+    <div class="main-nav" id="mainNavBar">
+        <button class="nav-btn active" id="navVendors" onclick="switchView('vendors')"><i class="fa-solid fa-address-book"></i> ספר ספקים</button>
+        <button class="nav-btn" id="navFavs" onclick="switchView('favorites')"><i class="fa-solid fa-star" style="color:#ffb020"></i> המועדפים שלי</button>
+        <button class="nav-btn" id="navRequests" onclick="switchView('requests')" style="display: none;"><i class="fa-solid fa-bell"></i> בקשות אישור <span id="reqCountBadge" style="background:var(--danger); color:white; font-size:11px; padding:2px 6px; border-radius:10px; display:none;">0</span></button>
+        <button class="nav-btn" id="navChat" onclick="switchView('chat')"><i class="fa-solid fa-comments"></i> צ'אט פנימי</button>
+        <button class="nav-btn" id="navTasks" onclick="switchView('tasks')"><i class="fa-solid fa-list-check"></i> משימות ותזכורות <span id="taskCountBadge" class="badge-dot"></span></button>
+        <button class="nav-btn" id="navUsers" onclick="switchView('users')" style="display: none;"><i class="fa-solid fa-users-gear"></i> ניהול מערכת</button>
     </div>
 
-    <script>
-        // --- נתונים דיפולטיביים מובנים (שחזור הנתונים המלאים שלך) ---
-        const defaultCategories = [
-            { id: "transport", name: "הובלות ולוגיסטיקה", active: true },
-            { id: "tech", name: "טכנולוגיה ומחשוב", active: true },
-            { id: "general", name: "שירותים כלליים ומשרד", active: true },
-            { id: "construction", name: "בינוי ואחזקה", active: true }
-        ];
+    <!-- לוח מודעות והתראות -->
+    <div class="bulletin-board" id="bulletinBoard">
+        <div class="bulletin-title"><i class="fa-solid fa-bullhorn"></i> לוח מודעות והנחיות מנהלים</div>
+        <div id="bulletinContent" style="font-size: 14px; line-height: 1.6;">אין הודעות מערכת חדשות בשלב זה.</div>
+    </div>
 
-        const defaultVendors = [
-            {
-                name: "א.ס. לב הובלה ואחסנה בע\"מ",
-                category: "transport",
-                contact: "אבי לב",
-                phone: "050-1234567",
-                email: "avi@as-lev.co.il",
-                rating: 4.8,
-                ratingsCount: 5,
-                notes: "ספק הובלות ראשי, אמינות גבוהה מאוד ומענה סביב השעון."
-            },
-            {
-                name: "מיקוש מילן בע\"מ",
-                category: "general",
-                contact: "רוני מילן",
-                phone: "03-9876543",
-                email: "office@milan-m.co.il",
-                rating: 4.5,
-                ratingsCount: 3,
-                notes: "אספקת ציוד היקפי ומשרדי שוטף."
-            },
-            {
-                name: "הום סנטר בע\"מ",
-                category: "construction",
-                contact: "מחלקת עסקים",
-                phone: "1-700-70-77-88",
-                email: "b2b@homecenter.co.il",
-                rating: 4.2,
-                ratingsCount: 10,
-                notes: "רכישת כלי עבודה וחומרי בניין באשראי עסקי."
-            }
-        ];
+    <!-- דשבורד סטטיסטיקות -->
+    <div class="dashboard-grid" id="statsDashboard">
+        <div class="dashboard-card">
+            <h3 id="statTotal">0</h3>
+            <p>סה"כ ספקים פעילים</p>
+        </div>
+        <div class="dashboard-card">
+            <h3 id="statCategories">0</h3>
+            <p>קטגוריות שונות</p>
+        </div>
+        <div class="dashboard-card">
+            <h3 id="statTopRated">0</h3>
+            <p>ספקים מצטיינים (4.5+)</p>
+        </div>
+        <div class="dashboard-card" id="statFrozenCard">
+            <h3 id="statFrozen">0</h3>
+            <p>ספקים מוקפאים</p>
+        </div>
+    </div>
 
-        // טעינה מ-LocalStorage או התבססות על נתוני המקור
-        let categories = JSON.parse(localStorage.getItem('phonebook_categories')) || defaultCategories;
-        let vendors = JSON.parse(localStorage.getItem('phonebook_vendors')) || defaultVendors;
+    <!-- מסך ספקים -->
+    <div id="vendorsSection" class="view-section active">
+        <div class="controls">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="חיפוש חופשי לפי שם, ח.פ, עיר, כתובת..." oninput="resetAndFilter()">
+            </div>
+            
+            <select class="filter-select" id="categoryFilter" onchange="resetAndFilter()">
+                <option value="all">כל הקטגוריות</option>
+            </select>
+
+            <select class="filter-select" id="regionFilter" onchange="resetAndFilter()">
+                <option value="all">כל האזורים</option>
+                <option value="מרכז">מרכז</option>
+                <option value="צפון">צפון</option>
+                <option value="דרום">דרום</option>
+            </select>
+
+            <div class="view-toggle-btns">
+                <button class="toggle-btn active" id="viewGridBtn" onclick="changeLayout('grid')"><i class="fa-solid fa-grip"></i> כרטיסים</button>
+                <button class="toggle-btn" id="viewListBtn" onclick="changeLayout('list')"><i class="fa-solid fa-list"></i> רשימה</button>
+            </div>
+        </div>
+
+        <!-- סינונים חכמים (Smart Filters) -->
+        <div class="smart-filters-row">
+            <button class="smart-filter-btn" id="smartFilterExcel" onclick="toggleSmartFilter('excellent')"><i class="fa-solid fa-award"></i> הצג רק ספקים מצטיינים (4.5 ומעלה)</button>
+            <button class="smart-filter-btn" id="smartFilterNoFeedback" onclick="toggleSmartFilter('no_feedback')"><i class="fa-solid fa-comment-slash"></i> הצג ספקים ללא חוות דעת</button>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stats" id="statsCounter">טוען נתונים...</div>
+            <button class="action-btn" id="btnExportExcel" onclick="exportToExcel()" style="background:#16a34a; color:white; display:none;"><i class="fa-solid fa-file-excel"></i> ייצוא דוח אקסל</button>
+        </div>
         
-        let currentFilterCategory = 'all';
-        let isAdminView = false;
+        <div class="grid-view" id="vendorsGrid"></div>
+        <button id="loadMoreBtn" style="padding:12px 24px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin: 20px auto; display:none;" onclick="loadMore()">טען עוד ספקים...</button>
+    </div>
 
-        // --- אתחול המערכת ---
-        function init() {
-            saveData();
-            renderUserCategories();
-            renderUserList();
-            renderAdminCategories();
-            renderAdminTable();
-            populateCategoryDropdown();
-            updateStats();
+    <!-- מסך בקשות אנשי קשר -->
+    <div id="requestsSection" class="view-section">
+        <div class="stats" id="requestsStats">אין בקשות ממתינות לאישור.</div>
+        <div class="grid-view" id="requestsGrid"></div>
+    </div>
+
+    <!-- מסך צ'אט פנימי -->
+    <div id="chatSection" class="view-section">
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="הקלד הודעה קבוצתית למשתמשי המערכת..." onkeydown="if(event.key === 'Enter') sendChatMessage()">
+                <button class="action-btn" style="background:var(--primary); color:white;" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i> שלח</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- מסך משימות ותזכורות -->
+    <div id="tasksSection" class="view-section">
+        <div style="background:var(--card-bg); padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom:20px;">
+            <h3 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-plus"></i> הוספת משימה חדשה</h3>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+                <div class="form-group">
+                    <label>שיוך לספק</label>
+                    <select id="taskVendorSelect"></select>
+                </div>
+                <div class="form-group"><label>תאור המשימה</label><input type="text" id="taskText" placeholder="למשל: להתקשר לחדש חוזה"></div>
+                <div class="form-group"><label>תאריך יעד</label><input type="date" id="taskDate"></div>
+            </div>
+            <button class="action-btn" style="background:var(--success); color:white; margin-top:15px; padding:10px 20px;" onclick="addTask()">צור משימה</button>
+        </div>
+
+        <div style="background:var(--card-bg); padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <h3 style="color:var(--text); margin-bottom:10px;"><i class="fa-solid fa-list-check"></i> רשימת המשימות שלי</h3>
+            <div id="tasksListContainer"></div>
+        </div>
+    </div>
+
+    <!-- מסך ניהול מערכת (למנהל על בלבד) -->
+    <div id="usersSection" class="view-section">
+        <div style="background:var(--card-bg); padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom:20px;">
+            <h3 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-user-plus"></i> הוספת משתמש חדש למערכת</h3>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+                <div class="form-group"><label>שם מלא</label><input type="text" id="addFullName" placeholder="ישראל ישראלי"></div>
+                <div class="form-group"><label>שם משתמש (לחיבור)</label><input type="text" id="addUsername" placeholder="israel123"></div>
+                <div class="form-group"><label>טלפון</label><input type="text" id="addPhone" placeholder="0501234567"></div>
+                <div class="form-group"><label>תפקיד במערכת</label><input type="text" id="addTitle" placeholder="מנהל רכש / סניף"></div>
+                <div class="form-group"><label>סיסמת חיבור</label><input type="text" id="addPassword" placeholder="בחר סיסמה"></div>
+                <div class="form-group">
+                    <label>רמת הרשאה</label>
+                    <select id="addPermission">
+                        <option value="אורח">אורח</option>
+                        <option value="משתמש רגיל">משתמש רגיל</option>
+                        <option value="מנהל">מנהל</option>
+                        <option value="מנהל על">מנהל על</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+                <label>גישה לקטגוריות ספקים (השאר ריק לגישה מלאה)</label>
+                <div id="categoryAccessCheckboxes" style="display: flex; gap: 15px; flex-wrap: wrap; background: var(--bg); padding: 10px; border-radius: 8px;"></div>
+            </div>
+            <button class="action-btn" style="background:var(--success); color:white; margin-top:15px; padding:10px 20px;" onclick="createNewUser()">צור משתמש חדש</button>
+        </div>
+
+        <!-- ניהול קטגוריות דינמיות -->
+        <div style="background:var(--card-bg); padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom:20px;">
+            <h3 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-tags"></i> ניהול קטגוריות במערכת</h3>
+            <div style="display:flex; gap:12px; align-items:flex-end;">
+                <div class="form-group" style="flex:1;"><label>שם קטגוריה חדשה</label><input type="text" id="newCategoryInput" placeholder="למשל: ספורט, מזון..."></div>
+                <button class="action-btn" style="background:var(--success); color:white; height:41px;" onclick="addDynamicCategory()">הוסף קטגוריה</button>
+            </div>
+        </div>
+
+        <div style="background:var(--card-bg); padding:20px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <h3 style="color:var(--text); margin-bottom:10px;"><i class="fa-solid fa-users"></i> רשימת משתמשים קיימים</h3>
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>שם מלא</th>
+                        <th>שם משתמש</th>
+                        <th>תפקיד</th>
+                        <th>הרשאה</th>
+                        <th>גישה לקטגוריות</th>
+                        <th>פעולות</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- מודאל פרופיל ספק מלא -->
+<div class="modal" id="vendorProfileModal" onclick="closeProfileModalOnOutsideClick(event)">
+    <div class="modal-content" style="max-width: 600px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid var(--primary); padding-bottom:10px;">
+            <h3 id="profTitle" style="color:var(--primary); font-size:22px;">פרופיל ספק מלא</h3>
+            <span id="profBadge" class="badge badge-deal"></span>
+        </div>
+        <div id="profileDetails"></div>
+
+        <!-- אנשי קשר מרובים -->
+        <div class="inner-section">
+            <div class="inner-title"><i class="fa-solid fa-users"></i> אנשי קשר נוספים</div>
+            <div id="profContactsList" style="margin-bottom:10px; font-size:13px;"></div>
+            <div id="addSecondaryContactArea" style="display:none; gap:5px; margin-top:5px;">
+                <input type="text" id="secContactName" placeholder="שם" style="flex:1; padding:5px; font-size:12px;">
+                <input type="text" id="secContactRole" placeholder="תפקיד" style="flex:1; padding:5px; font-size:12px;">
+                <input type="text" id="secContactPhone" placeholder="טלפון" style="flex:1; padding:5px; font-size:12px;">
+                <button class="action-btn" onclick="saveSecondaryContact()" style="padding:5px 10px; background:var(--success); color:white;"><i class="fa-solid fa-plus"></i></button>
+            </div>
+        </div>
+
+        <!-- קישורים למסמכים -->
+        <div class="inner-section">
+            <div class="inner-title"><i class="fa-solid fa-file-pdf"></i> מסמכים ונספחים חיצוניים</div>
+            <div id="profDocsList" style="margin-bottom:10px; font-size:13px;"></div>
+            <div id="addDocArea" style="display:none; gap:5px; margin-top:5px;">
+                <input type="text" id="docTitle" placeholder="שם המסמך (למשל חוזה)" style="flex:1; padding:5px; font-size:12px;">
+                <input type="text" id="docUrl" placeholder="קישור ל-Drive/Dropbox" style="flex:2; padding:5px; font-size:12px;">
+                <button class="action-btn" onclick="saveDocLink()" style="padding:5px 10px; background:var(--success); color:white;"><i class="fa-solid fa-plus"></i></button>
+            </div>
+        </div>
+
+        <!-- הערות ופתקים אישיים (Notes) -->
+        <div class="inner-section">
+            <div class="inner-title"><i class="fa-solid fa-sticky-note"></i> פתקים והערות</div>
+            <div id="profNotesList" style="margin-bottom:10px; max-height:120px; overflow-y:auto; font-size:13px; background:var(--bg); padding:8px; border-radius:8px;"></div>
+            <div id="addNoteArea" style="display:none; gap:5px; margin-top:5px;">
+                <input type="text" id="noteTextInput" placeholder="כתוב פתק חדש..." style="flex:1; padding:6px; font-size:13px;">
+                <button class="action-btn" onclick="saveVendorNote()" style="padding:5px 10px; background:var(--primary); color:white;">הוסף</button>
+            </div>
+        </div>
+
+        <!-- חוות דעת ותגובות -->
+        <div class="inner-section">
+            <div class="inner-title"><i class="fa-solid fa-comments"></i> היסטוריית ביקורות ופידבק מהשטח</div>
+            <div id="profReviewsList" style="margin-bottom:10px; max-height:150px; overflow-y:auto; background:var(--bg); padding:10px; border-radius:8px; font-size:13px;"></div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            <button class="action-btn" onclick="closeProfileModal()" style="background:var(--text); color:white; padding:10px 20px;">סגור חלונית</button>
+        </div>
+    </div>
+</div>
+
+<!-- מודאל הוספת איש קשר וביקורת ספק -->
+<div class="modal" id="userFeedbackModal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 15px; color: var(--primary);"><i class="fa-solid fa-user-plus"></i> הוספת איש קשר וביקורת ספק</h3>
+        <input type="hidden" id="feedbackVendorIndex">
+        <div class="form-group">
+            <label>שם איש הקשר החדש (דורש אישור מנהל)</label>
+            <input type="text" id="newUserContact" placeholder="שם מלא ותפקיד">
+        </div>
+        <div class="form-group"><label>טלפון איש קשר</label><input type="text" id="newUserPhone" placeholder="מספר נייד"></div>
+        
+        <div class="form-group">
+            <label>דירוג כוכבים</label>
+            <select id="userRating">
+                <option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>חוות דעת מלל חופשי (יופיע בפרופיל הספק)</label>
+            <textarea id="userReviewText" placeholder="כתוב פידבק קצר על הספק, עמידה בזמנים, איכות השירות..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            <button class="action-btn" onclick="closeFeedbackModal()">ביטול</button>
+            <button class="action-btn" style="background:var(--primary); color:white;" onclick="submitFeedback()">שמור ושלח</button>
+        </div>
+    </div>
+</div>
+
+<!-- מודאל עריכת ספק מנהל -->
+<div class="modal" id="adminVendorModal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:15px; color:var(--primary);">הגדרות מנהל וסטטוס ספק</h3>
+        <input type="hidden" id="adminEditIndex">
+        <div class="form-group">
+            <label>סטטוס ספק</label>
+            <select id="admStatus">
+                <option value="פעיל">🟢 פעיל (פתוח לכולם)</option>
+                <option value="מוקפא">🔴 מוקפא (מוסתר לחלוטין מאורחים ומשתמשים רגילים)</option>
+            </select>
+        </div>
+        <div class="form-group"><label>שם ספק</label><input type="text" id="admName"></div>
+        <div class="form-group">
+            <label>סוג עסקה ותנאי תשלום</label>
+            <select id="admDealType">
+                <option value="שוטף + 30">שוטף + 30</option><option value="שוטף + 60">שוטף + 60</option><option value="נותן שירות">נותן שירות</option>
+            </select>
+        </div>
+        <div class="form-group"><label>אתר אינטרנט</label><input type="text" id="admWebsite"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            <button class="action-btn" onclick="closeAdminModal()">ביטול</button>
+            <button class="action-btn" style="background:var(--success); color:white;" onclick="saveAdminVendor()">שמור שינויים</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let vendors = [];
+    let dynamicCategories = [];
+    
+    // רשימת משתמשים ראשונית (כולל הרשאות)
+    let defaultUsers = [
+        { "שם מלא": "אביב שטרית", "שם משתמש": "אביב שטרית", "טלפון": "—", "סיסמה": "Dror2026!", "הרשאה": "מנהל על", "תפקיד": "מנהל מערכת ראשי", "קטגוריות": [] }
+    ];
+    let systemUsers = [];
+
+    let currentUser = null;
+    let currentMode = 'all';
+    let currentLayout = 'grid';
+    let currentSmartFilter = 'all'; // excellent, no_feedback
+    const itemsToShow = 30;
+    let visibleCount = 30;
+
+    let favorites = [];
+    let requests = [];
+    let tasks = [];
+    let chatMessages = [];
+    let systemLogs = []; // יומן שינויים (מי שינה מה ומתי)
+
+    let currentOpenVendorIndex = null;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // טעינת הגדרות מצב כהה
+        if(localStorage.getItem('dark_mode') === 'enabled') {
+            document.body.classList.add('dark-mode');
         }
 
-        function saveData() {
-            localStorage.setItem('phonebook_categories', JSON.stringify(categories));
-            localStorage.setItem('phonebook_vendors', JSON.stringify(vendors));
-        }
-
-        // --- פונקציות מעבר ממשקים (מנהל/משתמש) ---
-        function toggleView() {
-            isAdminView = !isAdminView;
-            const userView = document.getElementById('userView');
-            const adminView = document.getElementById('adminView');
-            const viewText = document.getElementById('viewText');
-            const viewIcon = document.getElementById('viewIcon');
-
-            if (isAdminView) {
-                userView.classList.add('hidden');
-                adminView.classList.remove('hidden');
-                viewText.textContent = "מעבר לממשק משתמש קצה";
-                viewIcon.className = "fa-solid fa-users text-lg";
-                updateStats();
-                renderAdminCategories();
-                renderAdminTable();
-                populateCategoryDropdown();
-            } else {
-                userView.classList.remove('hidden');
-                adminView.classList.add('hidden');
-                viewText.textContent = "מעבר לממשק מנהל";
-                viewIcon.className = "fa-solid fa-user-gear text-lg";
-                renderUserCategories();
-                renderUserList();
+        // טעינת משתמשים
+        try {
+            systemUsers = JSON.parse(localStorage.getItem('dror_system_users'));
+            if(!systemUsers || systemUsers.length === 0) {
+                systemUsers = defaultUsers;
+                localStorage.setItem('dror_system_users', JSON.stringify(systemUsers));
             }
-        }
+        } catch(e) { systemUsers = defaultUsers; }
 
-        // --- פונקציות ניהול טופס ספקים ---
-        function toggleAddForm() {
-            const form = document.getElementById('vendorForm');
-            const chevron = document.getElementById('formChevron');
-            form.classList.toggle('hidden');
-            chevron.classList.toggle('rotate-180');
-        }
+        // טעינת קטגוריות דינמיות
+        try { dynamicCategories = JSON.parse(localStorage.getItem('dror_categories')) || []; } catch(e){}
 
-        function resetForm() {
-            document.getElementById('vendorForm').reset();
-            document.getElementById('editIndex').value = '';
-            document.getElementById('formTitle').textContent = "הוספת ספק חדש";
-            document.getElementById('vendorForm').classList.add('hidden');
-            document.getElementById('formChevron').classList.remove('rotate-180');
-        }
+        // טעינת משימות
+        try { tasks = JSON.parse(localStorage.getItem('dror_tasks')) || []; } catch(e){}
 
-        // --- טיפול בטופס (הוספה/עריכה) ---
-        document.getElementById('vendorForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const editIndex = document.getElementById('editIndex').value;
-            const vendorData = {
-                name: document.getElementById('vendorName').value,
-                category: document.getElementById('vendorCategory').value,
-                contact: document.getElementById('vendorContact').value,
-                phone: document.getElementById('vendorPhone').value,
-                email: document.getElementById('vendorEmail').value,
-                rating: parseFloat(document.getElementById('vendorRating').value) || 5,
-                ratingsCount: editIndex !== '' ? (vendors[editIndex].ratingsCount || 1) : 1,
-                notes: document.getElementById('vendorNotes').value
+        // טעינת היסטוריית צ'אט
+        try { chatMessages = JSON.parse(localStorage.getItem('dror_chat_msg')) || []; } catch(e){}
+
+        // טעינת יומן שינויים
+        try { systemLogs = JSON.parse(localStorage.getItem('dror_system_logs')) || []; } catch(e){}
+
+        const eyeBtn = document.getElementById('togglePasswordBtn');
+        if(eyeBtn) { eyeBtn.addEventListener('click', togglePasswordVisibility); }
+
+        const loginBtn = document.getElementById('submitLoginBtn');
+        if(loginBtn) { loginBtn.addEventListener('click', handleLogin); }
+        
+        const logoutBtn = document.getElementById('logoutBtn');
+        if(logoutBtn) { logoutBtn.addEventListener('click', handleLogout); }
+
+        try {
+            if(sessionStorage.getItem('active_user')) {
+                currentUser = JSON.parse(sessionStorage.getItem('active_user'));
+            }
+        } catch(e){}
+
+        // טעינת מועדפים
+        try { favorites = JSON.parse(localStorage.getItem('dror_favorites')) || []; } catch(e){}
+
+        loadSystemData();
+    });
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        if(document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('dark_mode', 'enabled');
+        } else {
+            localStorage.setItem('dark_mode', 'disabled');
+        }
+    }
+
+    function togglePasswordVisibility() {
+        const passInput = document.getElementById('loginPassword');
+        const icon = document.getElementById('togglePasswordBtn');
+        if (!passInput || !icon) return;
+        
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function handleLogin() {
+        const userIn = document.getElementById('loginUsername').value.trim();
+        const passIn = document.getElementById('loginPassword').value.trim();
+        const errLbl = document.getElementById('loginStatusText');
+
+        const found = systemUsers.find(u => (safeString(u['שם משתמש']) === userIn || safeString(u['שם מלא']) === userIn) && safeString(u['סיסמה']) === passIn);
+        
+        if(found) {
+            currentUser = { 
+                name: found['שם מלא'], 
+                role: found['הרשאה'], 
+                title: found['תפקיד'],
+                allowedCategories: found['קטגוריות'] || []
             };
+            try { sessionStorage.setItem('active_user', JSON.stringify(currentUser)); } catch(e){}
+            if(errLbl) errLbl.innerText = "";
+            showMainApp();
+        } else {
+            if(errLbl) errLbl.innerText = "שם משתמש או סיסמה שגויים!";
+        }
+    }
 
-            if (editIndex !== '') {
-                vendors[editIndex] = vendorData; // עדכון ספק קיים
-            } else {
-                vendors.push(vendorData); // יצירת ספק חדש
+    function loginAsGuest() {
+        currentUser = { name: "אורח במערכת", role: "אורח", title: "צפייה בלבד", allowedCategories: [] };
+        try { sessionStorage.setItem('active_user', JSON.stringify(currentUser)); } catch(e){}
+        showMainApp();
+    }
+
+    function safeString(val) { return val === undefined || val === null ? '' : String(val).trim(); }
+
+    async function loadSystemData() {
+        try {
+            const vRes = await fetch('./vendors.xlsx');
+            if(vRes.ok) {
+                const vBuf = await vRes.arrayBuffer();
+                const vWb = XLSX.read(new Uint8Array(vBuf), { type: 'array' });
+                const jsonData = XLSX.utils.sheet_to_json(vWb.Sheets[vWb.SheetNames[0]]);
+                
+                vendors = jsonData.map(row => {
+                    const id = safeString(row['מס.ספק'] || row['מספר ספק'] || '0');
+                    let web = safeString(row['Web Site'] || row['אתר']);
+                    if (web && !web.startsWith('http')) web = 'https://' + web;
+                    return {
+                        id: id,
+                        name: safeString(row['שם ספק'] || row['שם'] || 'ספק כללי'),
+                        city: safeString(row['עיר'] || '—'),
+                        phone: safeString(row['טלפון']),
+                        email: safeString(row['e-mail'] || row['אימייל']),
+                        group: safeString(row['תחום עיסוק'] || row['תאור סוג ספק'] || 'כללי'),
+                        region: row['עיר'] && ['חיפה','קריות','עכו','נתניה','חדרה'].some(n => String(row['עיר']).includes(n)) ? 'צפון' : (row['עיר'] && ['באר שבע','אשדוד','אילת'].some(s => String(row['עיר']).includes(s)) ? 'דרום' : 'מרכז'),
+                        dealType: row['סוג עסקה'] || (id % 3 === 0 ? 'שוטף + 30' : id % 3 === 1 ? 'שוטף + 60' : 'נותן שירות'),
+                        products: row['מוצרים'] ? safeString(row['מוצרים']).split(',') : ['ציוד והספקה'],
+                        rating: parseInt(row['דירוג']) || 5,
+                        approvedContact: safeString(row['איש קשר'] || 'לא הוגדר'),
+                        website: web,
+                        fullAddress: safeString(row['כתובת']),
+                        openDate: row['תאריך פתיחה'] ? safeString(row['תאריך פתיחה']) : '—',
+                        status: row['סטטוס'] || 'פעיל',
+                        secondaryContacts: [],
+                        docs: [],
+                        notes: [],
+                        reviews: []
+                    };
+                });
+                try { 
+                    if(localStorage.getItem('cached_vendors_v6')) {
+                        const cached = JSON.parse(localStorage.getItem('cached_vendors_v6'));
+                        vendors = vendors.map(v => {
+                            const foundCached = cached.find(c => c.id === v.id);
+                            return foundCached ? { ...v, ...foundCached } : v;
+                        });
+                    }
+                } catch(e){}
             }
+        } catch (e) { 
+            console.error("שגיאה בטעינת האקסל:", e); 
+        } finally {
+            if (currentUser) {
+                showMainApp();
+            } else {
+                document.getElementById('loginWrapper').style.display = 'flex';
+                document.getElementById('mainAppContainer').style.display = 'none';
+            }
+        }
+    }
 
-            saveData();
-            resetForm();
-            renderAdminTable();
-            updateStats();
+    function logAction(actionText) {
+        const log = {
+            id: Date.now(),
+            user: currentUser.name,
+            action: actionText,
+            timestamp: new Date().toLocaleString('he-IL')
+        };
+        systemLogs.unshift(log);
+        localStorage.setItem('dror_system_logs', JSON.stringify(systemLogs));
+        renderBulletinBoard();
+    }
+
+    function renderBulletinBoard() {
+        const board = document.getElementById('bulletinContent');
+        if(!board) return;
+        if(systemLogs.length === 0) {
+            board.innerHTML = "אין שינויים או פעולות אחרונות במערכת.";
+            return;
+        }
+        
+        let html = '<ul style="list-style: none; padding-right: 0; max-height: 100px; overflow-y: auto;">';
+        systemLogs.slice(0, 5).forEach(l => {
+            html += `<li style="margin-bottom: 5px; font-size: 13px;"><strong style="color:var(--primary)">[${l.timestamp}]</strong> ${l.user}: ${l.action}</li>`;
+        });
+        html += '</ul>';
+        board.innerHTML = html;
+    }
+
+    function showMainApp() {
+        document.getElementById('loginWrapper').style.display = 'none';
+        document.getElementById('mainAppContainer').style.display = 'block';
+        document.getElementById('lblUserName').innerText = currentUser.name;
+        document.getElementById('lblUserRole').innerText = currentUser.role;
+
+        // התראת משימות פתוחות
+        updateTaskBadge();
+
+        // חסימת פיצ'רים לפי הרשאה
+        if(currentUser.role === 'אורח') {
+            document.getElementById('navChat').style.display = 'none';
+            document.getElementById('navTasks').style.display = 'none';
+            document.getElementById('navRequests').style.display = 'none';
+            document.getElementById('btnExportExcel').style.display = 'none';
+            document.getElementById('statFrozenCard').style.display = 'none';
+        } else {
+            document.getElementById('navChat').style.display = 'inline-block';
+            document.getElementById('navTasks').style.display = 'inline-block';
+            document.getElementById('statFrozenCard').style.display = 'block';
+            
+            if(currentUser.role === 'מנהל' || currentUser.role === 'מנהל על') {
+                document.getElementById('navRequests').style.display = 'inline-block';
+                document.getElementById('btnExportExcel').style.display = 'inline-flex';
+            } else {
+                document.getElementById('navRequests').style.display = 'none';
+                document.getElementById('btnExportExcel').style.display = 'none';
+            }
+        }
+
+        if(currentUser.role === 'מנהל על') {
+            document.getElementById('navUsers').style.display = 'inline-block';
+            renderUsersTable();
+            buildCategoryCheckboxes();
+        } else {
+            document.getElementById('navUsers').style.display = 'none';
+        }
+
+        buildCategoryFilter();
+        updateRequestBadge();
+        renderDashboard();
+        renderBulletinBoard();
+        renderVendors();
+        populateTaskVendorSelect();
+        checkTaskReminders();
+    }
+
+    function handleLogout() { try{sessionStorage.removeItem('active_user');}catch(e){} window.location.reload(); }
+
+    function buildCategoryFilter() {
+        const categories = [...new Set(vendors.map(v => v.group))].filter(Boolean);
+        dynamicCategories.forEach(c => {
+            if(!categories.includes(c)) categories.push(c);
         });
 
-        // --- ממשק מנהל: ניהול קטגוריות והסרה מצפייה ---
-        function renderAdminCategories() {
-            const container = document.getElementById('adminCategoriesContainer');
-            container.innerHTML = '';
+        const select = document.getElementById('categoryFilter');
+        if(!select) return;
+        select.innerHTML = '<option value="all">כל הקטגוריות</option>';
+        categories.forEach(cat => {
+            if(currentUser.allowedCategories.length === 0 || currentUser.allowedCategories.includes(cat) || currentUser.role === 'מנהל על') {
+                const opt = document.createElement('option'); opt.value = cat; opt.innerText = cat; select.appendChild(opt);
+            }
+        });
+    }
 
-            categories.forEach(cat => {
-                const badgeColor = cat.active ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300';
-                const statusText = cat.active ? 'פעיל (מוצג)' : 'לא פעיל (מוסתר)';
-                const icon = cat.active ? 'fa-eye text-emerald-600' : 'fa-eye-slash text-rose-500';
+    function buildCategoryCheckboxes() {
+        const container = document.getElementById('categoryAccessCheckboxes');
+        if(!container) return;
+        const categories = [...new Set(vendors.map(v => v.group))].filter(Boolean);
+        dynamicCategories.forEach(c => { if(!categories.includes(c)) categories.push(c); });
 
-                container.innerHTML += `
-                    <div class="flex justify-between items-center p-2.5 rounded-lg border bg-white shadow-sm hover:shadow transition-all">
-                        <span class="font-semibold text-sm text-gray-700">${cat.name}</span>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs px-2 py-0.5 rounded-full border ${badgeColor}">${statusText}</span>
-                            <button onclick="toggleCategoryStatus('${cat.id}')" title="שינוי נראות קטגוריה" class="p-1.5 hover:bg-gray-100 rounded transition-all">
-                                <i class="fa-solid ${icon} text-sm"></i>
-                            </button>
+        container.innerHTML = '';
+        categories.forEach(cat => {
+            const lbl = document.createElement('label');
+            lbl.style.cssText = "display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;";
+            lbl.innerHTML = `<input type="checkbox" name="user_cat_access" value="${cat}"> ${cat}`;
+            container.appendChild(lbl);
+        });
+    }
+
+    function toggleFavorite(id, event) {
+        event.stopPropagation();
+        if(currentUser.role === 'אורח') return;
+        if(favorites.includes(id)) { favorites = favorites.filter(f => f !== id); } 
+        else { favorites.push(id); }
+        localStorage.setItem('dror_favorites', JSON.stringify(favorites));
+        renderVendors(false);
+    }
+
+    function toggleSmartFilter(filterType) {
+        const btnExcel = document.getElementById('smartFilterExcel');
+        const btnNoFeed = document.getElementById('smartFilterNoFeedback');
+
+        if(currentSmartFilter === filterType) {
+            currentSmartFilter = 'all';
+            btnExcel.classList.remove('active');
+            btnNoFeed.classList.remove('active');
+        } else {
+            currentSmartFilter = filterType;
+            if(filterType === 'excellent') {
+                btnExcel.classList.add('active');
+                btnNoFeed.classList.remove('active');
+            } else {
+                btnNoFeed.classList.add('active');
+                btnExcel.classList.remove('active');
+            }
+        }
+        renderVendors(false);
+    }
+
+    function renderDashboard() {
+        const isAdminOrSuper = currentUser.role === 'מנהל' || currentUser.role === 'מנהל על';
+        
+        let visibleVendors = vendors.filter(v => {
+            if (v.status === 'מוקפא' && !isAdminOrSuper) return false;
+            return true;
+        });
+
+        document.getElementById('statTotal').innerText = visibleVendors.filter(v => v.status === 'פעיל').length;
+        document.getElementById('statCategories').innerText = [...new Set(visibleVendors.map(v => v.group))].length;
+        document.getElementById('statTopRated').innerText = visibleVendors.filter(v => v.rating >= 4.5).length;
+        document.getElementById('statFrozen').innerText = vendors.filter(v => v.status === 'מוקפא').length;
+    }
+
+    function renderVendors(append = false) {
+        const grid = document.getElementById('vendorsGrid');
+        if (!grid) return;
+        
+        const searchInput = document.getElementById('searchInput');
+        const query = searchInput ? searchInput.value.toLowerCase() : '';
+        
+        const catSelect = document.getElementById('categoryFilter');
+        const selectedCat = catSelect ? catSelect.value : 'all';
+        
+        const regSelect = document.getElementById('regionFilter');
+        const selectedReg = regSelect ? regSelect.value : 'all';
+
+        if (!append) { grid.innerHTML = ''; visibleCount = itemsToShow; }
+
+        const isAdminOrSuper = currentUser.role === 'מנהל' || currentUser.role === 'מנהל על';
+
+        let filtered = vendors.filter(v => {
+            if(v.status === 'מוקפא' && !isAdminOrSuper) return false;
+
+            if(currentUser.role !== 'מנהל על' && currentUser.allowedCategories.length > 0) {
+                if(!currentUser.allowedCategories.includes(v.group)) return false;
+            }
+
+            const matchesSearch = v.name.toLowerCase().includes(query) || v.id.includes(query) || v.city.toLowerCase().includes(query) || (v.fullAddress && v.fullAddress.toLowerCase().includes(query));
+            const matchesCat = selectedCat === 'all' || v.group === selectedCat;
+            const matchesReg = selectedReg === 'all' || v.region === selectedReg;
+            const matchesMode = currentMode === 'all' || favorites.includes(v.id);
+            
+            let matchesSmart = true;
+            if(currentSmartFilter === 'excellent') {
+                matchesSmart = v.rating >= 4.5;
+            } else if(currentSmartFilter === 'no_feedback') {
+                matchesSmart = !v.reviews || v.reviews.length === 0;
+            }
+
+            return matchesSearch && matchesCat && matchesReg && matchesMode && matchesSmart;
+        });
+
+        const counter = document.getElementById('statsCounter');
+        if(counter) counter.innerText = `נמצאו ${filtered.length.toLocaleString()} ספקים`;
+        
+        const chunk = filtered.slice(append ? grid.children.length : 0, visibleCount);
+
+        chunk.forEach((vendor) => {
+            const actualIndex = vendors.indexOf(vendor);
+            const card = document.createElement('div');
+            const isFrozen = vendor.status === 'מוקפא';
+            card.className = `card ${isFrozen ? 'frozen' : ''}`;
+            card.setAttribute('onclick', `openProfileModal(${actualIndex}, event)`);
+
+            let starsHtml = '⭐'.repeat(Math.round(vendor.rating || 5));
+            const isFav = favorites.includes(vendor.id);
+            let whatsappUrl = `https://wa.me/${vendor.phone ? vendor.phone.replace(/[- ]/g, '') : ''}`;
+            const isGuest = currentUser && currentUser.role === 'אורח';
+
+            card.innerHTML = `
+                <div style="pointer-events:none;">
+                    <div class="card-header">
+                        <div style="flex:1;">
+                            <div class="vendor-name" style="text-align: right; direction: rtl;">
+                                <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${vendor.id}', event)" style="pointer-events:auto; display: ${isGuest ? 'none' : 'inline-block'}"><i class="fa-solid fa-star"></i></button>
+                                ${vendor.name}
+                            </div>
+                            <div class="vendor-id">מספר: #${vendor.id}</div>
+                            <div class="rating-stars">${starsHtml} <span style="font-size:11px; color:var(--text-muted)">(${vendor.reviews ? vendor.reviews.length : 0} חוות דעת)</span></div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                            <span class="badge ${isFrozen ? 'badge-frozen' : 'badge-active'}">${vendor.status || 'פעיל'}</span>
+                            <span class="badge badge-deal">${vendor.dealType}</span>
                         </div>
                     </div>
-                `;
-            });
-        }
-
-        function toggleCategoryStatus(catId) {
-            const cat = categories.find(c => c.id === catId);
-            if (cat) {
-                cat.active = !cat.active;
-                saveData();
-                renderAdminCategories();
-                updateStats();
-                if (!isAdminView) {
-                    renderUserCategories();
-                    renderUserList();
-                }
-            }
-        }
-
-        function addNewCategory() {
-            const input = document.getElementById('newCategoryInput');
-            const name = input.value.trim();
-            if (!name) return;
-
-            const id = 'cat_' + Date.now();
-            categories.push({ id, name, active: true });
-            input.value = '';
-            saveData();
-            renderAdminCategories();
-            populateCategoryDropdown();
-            updateStats();
-        }
-
-        function populateCategoryDropdown() {
-            const dropdown = document.getElementById('vendorCategory');
-            dropdown.innerHTML = '<option value="" disabled selected>בחר קטגוריה</option>';
-            categories.forEach(cat => {
-                dropdown.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
-            });
-        }
-
-        // --- ממשק מנהל: טבלת ספקים פונקציונלית ---
-        function renderAdminTable() {
-            const tbody = document.getElementById('adminTableBody');
-            const searchVal = document.getElementById('adminSearchInput').value.toLowerCase();
-            tbody.innerHTML = '';
-
-            vendors.forEach((vendor, index) => {
-                if (searchVal && 
-                    !vendor.name.toLowerCase().includes(searchVal) && 
-                    !vendor.contact.toLowerCase().includes(searchVal) &&
-                    !vendor.phone.includes(searchVal)) {
-                    return;
-                }
-
-                const catObj = categories.find(c => c.id === vendor.category);
-                const catName = catObj ? catObj.name : 'כללי';
-                const catActive = catObj ? catObj.active : true;
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50/50 transition-all">
-                        <td class="py-3 px-4 font-semibold text-gray-900">
-                            ${vendor.name}
-                        </td>
-                        <td class="py-3 px-4">
-                            <span class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 border border-gray-200">
-                                ${catName}
-                                ${!catActive ? ' <span class="text-rose-500 font-bold">(מוסתרת מהמשתמשים)</span>' : ''}
-                            </span>
-                        </td>
-                        <td class="py-3 px-4 text-xs">
-                            <div class="font-bold text-gray-700">${vendor.contact || 'אין איש קשר'}</div>
-                            <div class="text-gray-500">${vendor.phone}</div>
-                        </td>
-                        <td class="py-3 px-4 text-amber-500 font-bold">
-                            ★ ${vendor.rating.toFixed(1)} <span class="text-gray-400 text-xs font-normal">(${vendor.ratingsCount || 1} דירוגים)</span>
-                        </td>
-                        <td class="py-3 px-4">
-                            <div class="flex justify-center gap-2">
-                                <button onclick="editVendor(${index})" class="p-1 px-2.5 text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md transition-all">
-                                    <i class="fa-solid fa-pen-to-square"></i> ערוך
-                                </button>
-                                <button onclick="deleteVendor(${index})" class="p-1 px-2.5 text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-md transition-all">
-                                    <i class="fa-solid fa-trash"></i> מחק
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function editVendor(index) {
-            const vendor = vendors[index];
-            document.getElementById('editIndex').value = index;
-            document.getElementById('vendorName').value = vendor.name;
-            document.getElementById('vendorCategory').value = vendor.category;
-            document.getElementById('vendorContact').value = vendor.contact;
-            document.getElementById('vendorPhone').value = vendor.phone;
-            document.getElementById('vendorEmail').value = vendor.email;
-            document.getElementById('vendorRating').value = vendor.rating;
-            document.getElementById('vendorNotes').value = vendor.notes;
-
-            document.getElementById('formTitle').textContent = "עריכת ספק: " + vendor.name;
-            
-            const form = document.getElementById('vendorForm');
-            form.classList.remove('hidden');
-            document.getElementById('formChevron').classList.add('rotate-180');
-            form.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function deleteVendor(index) {
-            if (confirm("האם אתה בטוח שברצונך למחוק ספק זה?")) {
-                vendors.splice(index, 1);
-                saveData();
-                renderAdminTable();
-                updateStats();
-            }
-        }
-
-        // עדכון סטטיסטיקות פאנל מנהל
-        function updateStats() {
-            document.getElementById('statTotalVendors').textContent = vendors.length;
-            document.getElementById('statActiveCategories').textContent = categories.filter(c => c.active).length;
-            document.getElementById('statInactiveCategories').textContent = categories.filter(c => !c.active).length;
-            
-            const totalRatings = vendors.reduce((sum, v) => sum + v.rating, 0);
-            const avg = vendors.length ? (totalRatings / vendors.length).toFixed(1) : "0.0";
-            document.getElementById('statAvgRating').textContent = avg;
-        }
-
-        // --- ממשק משתמש קצה (User View) ---
-        function renderUserCategories() {
-            const container = document.getElementById('userCategoriesContainer');
-            container.innerHTML = '';
-
-            // מציגים אך ורק קטגוריות מסומנות כפעילות!
-            const activeCats = categories.filter(c => c.active);
-
-            // חישוב כמות הספקים המוצגים בקטגוריות הפעילות בלבד
-            const activeVendorsCount = vendors.filter(v => {
-                const cat = categories.find(c => c.id === v.category);
-                return cat && cat.active;
-            }).length;
-
-            const activeAllClass = currentFilterCategory === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white hover:bg-gray-100 text-gray-700';
-            container.innerHTML += `
-                <button onclick="setFilterCategory('all')" class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${activeAllClass}">
-                    הכל (${activeVendorsCount})
-                </button>
+                    <div class="vendor-body">
+                        <div class="vendor-info"><i class="fa-solid fa-location-dot"></i> <strong>עיר:</strong> ${vendor.city}</div>
+                        <div class="vendor-info"><i class="fa-solid fa-user-tie"></i> <strong>איש קשר:</strong> ${vendor.approvedContact}</div>
+                    </div>
+                </div>
+                <div class="action-buttons" onclick="event.stopPropagation();">
+                    <a href="tel:${vendor.phone}" class="action-btn ${(!vendor.phone || isFrozen || isGuest) ? 'disabled' : ''}" style="background:#dcfce7;"><i class="fa-solid fa-phone" style="color:var(--success)"></i> חיוג</a>
+                    <a href="${whatsappUrl}" target="_blank" class="action-btn ${(!vendor.phone || isFrozen || isGuest) ? 'disabled' : ''}" style="background:#e8f5e9;"><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> הודעה</a>
+                    ${vendor.website ? `<a href="${vendor.website}" target="_blank" class="action-btn ${isFrozen ? 'disabled' : ''}"><i class="fa-solid fa-globe" style="color:var(--primary)"></i> אתר</a>` : ''}
+                    <button class="action-btn ${(isFrozen || isGuest) ? 'disabled' : ''}" onclick="openFeedbackModal(${actualIndex})"><i class="fa-solid fa-user-plus" style="color:var(--warning)"></i> עדכון</button>
+                </div>
+                <div class="admin-actions" style="display: ${currentUser && (currentUser.role === 'מנהל' || currentUser.role === 'מנהל על') ? 'flex' : 'none'}" onclick="event.stopPropagation();">
+                    <button class="action-btn" style="background:var(--primary); color:white; width:100%;" onclick="openAdminModal(${actualIndex})"><i class="fa-solid fa-user-gear"></i> הגדרות מנהל</button>
+                </div>
             `;
+            grid.appendChild(card);
+        });
 
-            activeCats.forEach(cat => {
-                const count = vendors.filter(v => v.category === cat.id).length;
-                const activeClass = currentFilterCategory === cat.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-white hover:bg-gray-100 text-gray-700';
-                
-                container.innerHTML += `
-                    <button onclick="setFilterCategory('${cat.id}')" class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${activeClass}">
-                        ${cat.name} (${count})
-                    </button>
-                `;
-            });
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        if(loadMoreBtn) loadMoreBtn.style.display = grid.children.length < filtered.length ? 'block' : 'none';
+    }
+
+    function loadMore() { visibleCount += itemsToShow; renderVendors(true); }
+    function resetAndFilter() { renderVendors(false); }
+
+    function changeLayout(type) {
+        currentLayout = type;
+        const grid = document.getElementById('vendorsGrid');
+        if(!grid) return;
+        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        if(type === 'grid') { grid.className = 'grid-view'; document.getElementById('viewGridBtn').classList.add('active'); } 
+        else { grid.className = 'list-view'; document.getElementById('viewListBtn').classList.add('active'); }
+        renderVendors(false);
+    }
+
+    function openProfileModal(index, event) {
+        currentOpenVendorIndex = index;
+        const vendor = vendors[index];
+        document.getElementById('profTitle').innerText = vendor.name;
+        document.getElementById('profBadge').innerText = vendor.dealType;
+        let wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(vendor.fullAddress || vendor.city)}`;
+
+        document.getElementById('profileDetails').innerHTML = `
+            <div class="profile-row"><strong>סטטוס במערכת:</strong> <span style="font-weight:bold; color:${vendor.status === 'מוקפא' ? 'var(--danger)' : 'var(--success)'}">${vendor.status || 'פעיל'}</span></div>
+            <div class="profile-row"><strong>מספר ספק / ח.פ:</strong> <span>${vendor.id}</span></div>
+            <div class="profile-row"><strong>תחום עיסוק קבוע:</strong> <span>${vendor.group}</span></div>
+            <div class="profile-row"><strong>עיר:</strong> <span>${vendor.city}</span></div>
+            <div class="profile-row"><strong>כתובת מלאה:</strong> <span>${vendor.fullAddress || 'לא הוגדרה'}</span></div>
+            <div class="profile-row"><strong>איש קשר מאושר:</strong> <span>${vendor.approvedContact}</span></div>
+            <div class="profile-row"><strong>טלפון:</strong> <span>${vendor.phone || 'אין'}</span></div>
+            <div class="profile-row"><strong>אימייל:</strong> <span>${vendor.email || 'אין'}</span></div>
+            <div class="profile-row"><strong>תאריך פתיחה במערכת:</strong> <span>${vendor.openDate}</span></div>
+            <div style="margin-top:15px; display:flex; gap:10px;">
+                <a href="${wazeUrl}" target="_blank" class="action-btn" style="background:#33ccff; color:white; flex:1; text-align:center;"><i class="fa-brands fa-waze"></i> ניווט ב-Waze</a>
+            </div>
+        `;
+
+        const canWrite = currentUser.role !== 'אורח';
+        document.getElementById('addSecondaryContactArea').style.display = canWrite ? 'flex' : 'none';
+        document.getElementById('addNoteArea').style.display = canWrite ? 'flex' : 'none';
+        document.getElementById('addDocArea').style.display = (currentUser.role === 'מנהל' || currentUser.role === 'מנהל על') ? 'flex' : 'none';
+
+        renderSecondaryContacts();
+        renderDocLinks();
+        renderVendorNotes();
+        renderVendorReviews();
+
+        document.getElementById('vendorProfileModal').style.display = 'flex';
+    }
+    
+    function closeProfileModal() { document.getElementById('vendorProfileModal').style.display = 'none'; currentOpenVendorIndex = null; }
+    function closeProfileModalOnOutsideClick(e) { if(e.target.id === 'vendorProfileModal') closeProfileModal(); }
+    
+    function openFeedbackModal(index) { document.getElementById('feedbackVendorIndex').value = index; document.getElementById('userFeedbackModal').style.display = 'flex'; }
+    function closeFeedbackModal() { document.getElementById('userFeedbackModal').style.display = 'none'; }
+
+    function submitFeedback() {
+        const idx = document.getElementById('feedbackVendorIndex').value;
+        const contactName = document.getElementById('newUserContact').value.trim();
+        const contactPhone = document.getElementById('newUserPhone').value.trim();
+        const score = parseInt(document.getElementById('userRating').value);
+        const reviewText = document.getElementById('userReviewText').value.trim();
+
+        if(!vendors[idx].reviews) vendors[idx].reviews = [];
+        
+        vendors[idx].reviews.push({
+            user: currentUser.name,
+            rating: score,
+            comment: reviewText || "ללא פירוט",
+            date: new Date().toLocaleDateString('he-IL')
+        });
+
+        const sum = vendors[idx].reviews.reduce((acc, r) => acc + r.rating, 0);
+        vendors[idx].rating = sum / vendors[idx].reviews.length;
+
+        if(contactName) {
+            requests.push({ id: Date.now(), vendorIndex: idx, vendorName: vendors[idx].name, proposedContact: contactName + (contactPhone ? ` (${contactPhone})` : '') });
+            localStorage.setItem('dror_contact_reqs', JSON.stringify(requests));
+            updateRequestBadge();
+            logAction(`הציע עדכון איש קשר עבור ${vendors[idx].name}`);
+            alert("הבקשה לאיש קשר נשלחה לאישור מנהל!");
+        } else { 
+            logAction(`הוסיף חוות דעת ודירוג ${score} לספק ${vendors[idx].name}`);
+            alert("הדירוג והתגובה עודכנו בהצלחה!"); 
         }
 
-        function setFilterCategory(catId) {
-            currentFilterCategory = catId;
-            renderUserCategories();
-            renderUserList();
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        closeFeedbackModal(); 
+        renderVendors(false);
+        renderDashboard();
+    }
+
+    /* אנשי קשר מרובים */
+    function renderSecondaryContacts() {
+        const container = document.getElementById('profContactsList');
+        const vendor = vendors[currentOpenVendorIndex];
+        if(!vendor.secondaryContacts) vendor.secondaryContacts = [];
+
+        if(vendor.secondaryContacts.length === 0) {
+            container.innerHTML = "<span style='color:var(--text-muted)'>אין אנשי קשר נוספים רשומים.</span>";
+            return;
         }
 
-        // דירוג ספקים אינטראקטיבי בממשק המשתמש (מנגנון הדירוגים המקורי)
-        function rateVendor(vendorIndex, starValue) {
-            const vendor = vendors[vendorIndex];
-            const currentRating = vendor.rating || 5;
-            const currentCount = vendor.ratingsCount || 1;
-            
-            // חישוב ממוצע משוקלל חדש
-            const newCount = currentCount + 1;
-            const newRating = ((currentRating * currentCount) + starValue) / newCount;
-            
-            vendors[vendorIndex].rating = parseFloat(newRating.toFixed(1));
-            vendors[vendorIndex].ratingsCount = newCount;
-            
-            saveData();
-            renderUserList();
-            updateStats();
+        let html = '<ul style="list-style:none; padding-right:0;">';
+        vendor.secondaryContacts.forEach((c, i) => {
+            html += `<li style="margin-bottom:6px; display:flex; justify-content:space-between;">
+                        <span>📞 <strong>${c.name}</strong> (${c.role}) - ${c.phone}</span>
+                        ${currentUser.role !== 'אורח' ? `<button onclick="deleteSecondaryContact(${i})" style="border:none; background:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                     </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    function saveSecondaryContact() {
+        const name = document.getElementById('secContactName').value.trim();
+        const role = document.getElementById('secContactRole').value.trim();
+        const phone = document.getElementById('secContactPhone').value.trim();
+
+        if(!name || !phone) { alert("יש למלא שם וטלפון לפחות!"); return; }
+
+        if(!vendors[currentOpenVendorIndex].secondaryContacts) vendors[currentOpenVendorIndex].secondaryContacts = [];
+        vendors[currentOpenVendorIndex].secondaryContacts.push({ name, role: role || 'כללי', phone });
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        
+        document.getElementById('secContactName').value = '';
+        document.getElementById('secContactRole').value = '';
+        document.getElementById('secContactPhone').value = '';
+
+        renderSecondaryContacts();
+        logAction(`הוסיף איש קשר משני ל-${vendors[currentOpenVendorIndex].name}`);
+    }
+
+    function deleteSecondaryContact(i) {
+        vendors[currentOpenVendorIndex].secondaryContacts.splice(i, 1);
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        renderSecondaryContacts();
+    }
+
+    /* קישורים למסמכים */
+    function renderDocLinks() {
+        const container = document.getElementById('profDocsList');
+        const vendor = vendors[currentOpenVendorIndex];
+        if(!vendor.docs) vendor.docs = [];
+
+        if(vendor.docs.length === 0) {
+            container.innerHTML = "<span style='color:var(--text-muted)'>אין מסמכים מצורפים.</span>";
+            return;
         }
 
-        function renderUserList() {
-            const grid = document.getElementById('vendorsGrid');
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
-            grid.innerHTML = '';
+        let html = '<ul style="list-style:none; padding-right:0;">';
+        vendor.docs.forEach((d, i) => {
+            html += `<li style="margin-bottom:6px; display:flex; justify-content:space-between;">
+                        <a href="${d.url}" target="_blank" style="color:var(--primary); text-decoration:underline;">📂 ${d.title}</a>
+                        ${(currentUser.role === 'מנהל' || currentUser.role === 'מנהל על') ? `<button onclick="deleteDocLink(${i})" style="border:none; background:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                     </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+    }
 
-            const activeCategoryIds = categories.filter(c => c.active).map(c => c.id);
+    function saveDocLink() {
+        const title = document.getElementById('docTitle').value.trim();
+        let url = document.getElementById('docUrl').value.trim();
 
-            vendors.forEach((vendor, index) => {
-                // בדיקת סינון לפי קטגוריה פעילה
-                if (!activeCategoryIds.includes(vendor.category)) return;
-                if (currentFilterCategory !== 'all' && vendor.category !== currentFilterCategory) return;
+        if(!title || !url) { alert("יש למלא שם מסמך וקישור!"); return; }
+        if(!url.startsWith('http')) url = 'https://' + url;
 
-                // חיפוש חופשי
-                if (searchVal && 
-                    !vendor.name.toLowerCase().includes(searchVal) && 
-                    !vendor.contact.toLowerCase().includes(searchVal) && 
-                    !vendor.notes.toLowerCase().includes(searchVal)) {
-                    return;
-                }
+        if(!vendors[currentOpenVendorIndex].docs) vendors[currentOpenVendorIndex].docs = [];
+        vendors[currentOpenVendorIndex].docs.push({ title, url });
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
 
-                // יצירת כוכבי דירוג אינטראקטיביים ללחיצה
-                let starsHTML = '';
-                const ratingValue = Math.round(vendor.rating || 5);
-                for (let i = 1; i <= 5; i++) {
-                    const isFilled = i <= ratingValue;
-                    starsHTML += `
-                        <button onclick="rateVendor(${index}, ${i})" class="hover:scale-125 transition-transform" title="דרג ${i} כוכבים">
-                            <i class="${isFilled ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star text-gray-300'}"></i>
-                        </button>
-                    `;
-                }
+        document.getElementById('docTitle').value = '';
+        document.getElementById('docUrl').value = '';
 
-                const catName = categories.find(c => c.id === vendor.category)?.name || 'כללי';
+        renderDocLinks();
+        logAction(`הוסיף מסמך ל-${vendors[currentOpenVendorIndex].name}`);
+    }
 
-                grid.innerHTML += `
-                    <div class="glass p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white flex flex-col justify-between">
+    function deleteDocLink(i) {
+        vendors[currentOpenVendorIndex].docs.splice(i, 1);
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        renderDocLinks();
+    }
+
+    /* פתקים והערות (Notes) */
+    function renderVendorNotes() {
+        const container = document.getElementById('profNotesList');
+        const vendor = vendors[currentOpenVendorIndex];
+        if(!vendor.notes) vendor.notes = [];
+
+        if(vendor.notes.length === 0) {
+            container.innerHTML = "<span style='color:var(--text-muted)'>אין פתקים.</span>";
+            return;
+        }
+
+        let html = '';
+        vendor.notes.forEach((n, i) => {
+            const isOwner = n.author === currentUser.name;
+            const canDelete = isOwner || currentUser.role === 'מנהל' || currentUser.role === 'מנהל על';
+
+            html += `<div style="background:var(--card-bg); padding:8px; border-radius:6px; margin-bottom:5px; display:flex; justify-content:space-between;">
                         <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">${catName}</span>
-                                <div class="flex gap-1 items-center">
-                                    <div class="flex text-sm ml-1">${starsHTML}</div>
-                                    <span class="text-xs text-gray-500 font-bold">(${vendor.rating.toFixed(1)})</span>
-                                </div>
-                            </div>
-                            <h4 class="text-xl font-bold text-indigo-950 mb-2">${vendor.name}</h4>
-                            <p class="text-gray-600 text-sm mb-4 line-clamp-3">${vendor.notes || 'אין הערות נוספות עבור ספק זה.'}</p>
+                            <strong>${n.author}:</strong> ${n.text}
+                            <span style="font-size:10px; color:var(--text-muted); display:block;">${n.date}</span>
                         </div>
-                        
-                        <div class="border-t pt-4 space-y-3">
-                            <div class="flex items-center justify-between text-sm text-gray-700">
-                                <span class="flex items-center gap-2">
-                                    <i class="fa-solid fa-user text-gray-400"></i>
-                                    ${vendor.contact || 'אין איש קשר'}
-                                </span>
-                                ${vendor.email ? `
-                                <a href="mailto:${vendor.email}" class="text-indigo-600 hover:underline flex items-center gap-1" title="${vendor.email}">
-                                    <i class="fa-solid fa-envelope"></i> שלח מייל
-                                </a>` : ''}
-                            </div>
-                            
-                            <!-- כפתור חיוג מהיר -->
-                            <a href="tel:${vendor.phone}" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-sm">
-                                <i class="fa-solid fa-phone"></i>
-                                התקשר: ${vendor.phone}
-                            </a>
-                        </div>
-                    </div>
-                `;
-            });
+                        ${canDelete ? `<button onclick="deleteVendorNote(${i})" style="border:none; background:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                     </div>`;
+        });
+        container.innerHTML = html;
+    }
 
-            if (grid.children.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-12 glass rounded-2xl text-gray-500">
-                        <i class="fa-solid fa-folder-open text-4xl mb-3 text-gray-400"></i>
-                        <p>לא נמצאו ספקים תחת הסינון או החיפוש הנוכחי.</p>
-                    </div>
-                `;
-            }
+    function saveVendorNote() {
+        const text = document.getElementById('noteTextInput').value.trim();
+        if(!text) return;
+
+        if(!vendors[currentOpenVendorIndex].notes) vendors[currentOpenVendorIndex].notes = [];
+        vendors[currentOpenVendorIndex].notes.push({
+            author: currentUser.name,
+            text: text,
+            date: new Date().toLocaleDateString('he-IL')
+        });
+
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        document.getElementById('noteTextInput').value = '';
+        renderVendorNotes();
+    }
+
+    function deleteVendorNote(i) {
+        vendors[currentOpenVendorIndex].notes.splice(i, 1);
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        renderVendorNotes();
+    }
+
+    /* הצגת חוות דעת */
+    function renderVendorReviews() {
+        const container = document.getElementById('profReviewsList');
+        const vendor = vendors[currentOpenVendorIndex];
+
+        if(!vendor.reviews || vendor.reviews.length === 0) {
+            container.innerHTML = "<span style='color:var(--text-muted)'>עדיין לא נכתבו ביקורות לספק זה.</span>";
+            return;
         }
 
-        // הפעלה ראשונית של המערכת
-        window.onload = init;
-    </script>
+        let html = '';
+        vendor.reviews.forEach(r => {
+            html += `<div style="border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:6px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <strong>${r.user}</strong>
+                            <span>${'⭐'.repeat(r.rating)}</span>
+                        </div>
+                        <p style="margin-top:4px;">${r.comment}</p>
+                        <span style="font-size:10px; color:var(--text-muted);">${r.date}</span>
+                     </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+
+    /* ניהול בקשות (למנהלים בלבד) */
+    function renderRequests() {
+        const container = document.getElementById('requestsGrid'); if(!container) return;
+        container.innerHTML = '';
+        document.getElementById('requestsStats').innerText = `ממתינות לאישור: ${requests.length} בקשות`;
+        requests.forEach((req, index) => {
+            const card = document.createElement('div'); card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header"><div><div class="vendor-name">${req.vendorName}</div></div><span class="badge badge-pending">ממתין</span></div>
+                <div class="vendor-body"><p style="padding:8px; background:var(--bg); border-radius:6px; text-align: right;">${req.proposedContact}</p></div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button class="action-btn" style="background:var(--success); color:white; flex:1;" onclick="approveContact(${index})">אשר והוסף</button>
+                    <button class="action-btn" style="background:var(--danger); color:white; flex:1;" onclick="rejectContact(${index})">דחה</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function approveContact(index) {
+        const req = requests[index];
+        if(vendors[req.vendorIndex]) {
+            vendors[req.vendorIndex].approvedContact = req.proposedContact;
+            logAction(`אישר איש קשר חדש ל-${vendors[req.vendorIndex].name}: ${req.proposedContact}`);
+        }
+        requests.splice(index, 1);
+        localStorage.setItem('dror_contact_reqs', JSON.stringify(requests));
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        updateRequestBadge(); renderRequests(); renderVendors(false);
+    }
+    
+    function rejectContact(index) { 
+        requests.splice(index, 1); 
+        localStorage.setItem('dror_contact_reqs', JSON.stringify(requests)); 
+        updateRequestBadge(); 
+        renderRequests(); 
+    }
+    
+    function updateRequestBadge() { const badge = document.getElementById('reqCountBadge'); if(!badge) return; if(requests.length > 0 && (currentUser.role === 'מנהל' || currentUser.role === 'מנהל על')) { badge.innerText = requests.length; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; } }
+
+    /* הגדרות מנהל */
+    function openAdminModal(index) {
+        document.getElementById('adminEditIndex').value = index;
+        document.getElementById('admStatus').value = vendors[index].status || 'פעיל';
+        document.getElementById('admName').value = vendors[index].name;
+        document.getElementById('admDealType').value = vendors[index].dealType;
+        document.getElementById('admWebsite').value = vendors[index].website || '';
+        document.getElementById('adminVendorModal').style.display = 'flex';
+    }
+    
+    function closeAdminModal() { document.getElementById('adminVendorModal').style.display = 'none'; }
+    
+    function saveAdminVendor() {
+        const idx = document.getElementById('adminEditIndex').value;
+        const oldStatus = vendors[idx].status;
+        const newStatus = document.getElementById('admStatus').value;
+
+        vendors[idx].status = newStatus;
+        vendors[idx].name = document.getElementById('admName').value;
+        vendors[idx].dealType = document.getElementById('admDealType').value;
+        vendors[idx].website = document.getElementById('admWebsite').value;
+        localStorage.setItem('cached_vendors_v6', JSON.stringify(vendors));
+        
+        logAction(`עדכן את פרטי המנהל של ${vendors[idx].name} (סטטוס שונה מ-${oldStatus} ל-${newStatus})`);
+        closeAdminModal(); 
+        renderVendors(false);
+        renderDashboard();
+    }
+
+    /* מערכת משימות ותזכורות */
+    function populateTaskVendorSelect() {
+        const select = document.getElementById('taskVendorSelect');
+        if(!select) return;
+        select.innerHTML = '';
+        vendors.forEach((v, index) => {
+            const opt = document.createElement('option');
+            opt.value = index;
+            opt.innerText = v.name;
+            select.appendChild(opt);
+        });
+    }
+
+    function addTask() {
+        const vIndex = document.getElementById('taskVendorSelect').value;
+        const text = document.getElementById('taskText').value.trim();
+        const date = document.getElementById('taskDate').value;
+
+        if(!text || !date) { alert("יש למלא תיאור משימה ותאריך יעד!"); return; }
+
+        tasks.push({
+            id: Date.now(),
+            vendorIndex: vIndex,
+            vendorName: vendors[vIndex].name,
+            text,
+            date,
+            user: currentUser.name,
+            completed: false
+        });
+
+        localStorage.setItem('dror_tasks', JSON.stringify(tasks));
+        document.getElementById('taskText').value = '';
+        document.getElementById('taskDate').value = '';
+
+        renderTasks();
+        updateTaskBadge();
+        logAction(`הוסיף משימה עבור ${vendors[vIndex].name}`);
+    }
+
+    function renderTasks() {
+        const container = document.getElementById('tasksListContainer');
+        if(!container) return;
+        
+        const myTasks = tasks.filter(t => t.user === currentUser.name);
+
+        if(myTasks.length === 0) {
+            container.innerHTML = "<p style='color:var(--text-muted)'>אין לך משימות פתוחות.</p>";
+            return;
+        }
+
+        let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+        myTasks.forEach(t => {
+            const isOverdue = new Date(t.date) < new Date() && !t.completed;
+            html += `<div style="background:var(--bg); padding:12px; border-radius:10px; border-right:4px solid ${t.completed ? 'var(--success)' : (isOverdue ? 'var(--danger)' : 'var(--warning)')}; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong style="${t.completed ? 'text-decoration: line-through; opacity:0.6;' : ''}">${t.text}</strong>
+                            <div style="font-size:12px; color:var(--text-muted);">ספק: ${t.vendorName} | יעד: ${t.date} ${isOverdue ? '<b style="color:var(--danger)">(עבר הזמן!)</b>' : ''}</div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="action-btn" style="background:var(--success); color:white;" onclick="toggleTaskComplete(${t.id})"><i class="fa-solid fa-check"></i></button>
+                            <button class="action-btn" style="background:var(--danger); color:white;" onclick="deleteTask(${t.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                     </div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function toggleTaskComplete(id) {
+        tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+        localStorage.setItem('dror_tasks', JSON.stringify(tasks));
+        renderTasks();
+        updateTaskBadge();
+    }
+
+    function deleteTask(id) {
+        tasks = tasks.filter(t => t.id !== id);
+        localStorage.setItem('dror_tasks', JSON.stringify(tasks));
+        renderTasks();
+        updateTaskBadge();
+    }
+
+    function updateTaskBadge() {
+        const badge = document.getElementById('taskCountBadge');
+        if(!badge) return;
+        const activeAlerts = tasks.filter(t => t.user === currentUser.name && !t.completed && new Date(t.date) <= new Date());
+        if(activeAlerts.length > 0) {
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function checkTaskReminders() {
+        if(!currentUser || currentUser.role === 'אורח') return;
+        const activeAlerts = tasks.filter(t => t.user === currentUser.name && !t.completed && new Date(t.date) <= new Date());
+        if(activeAlerts.length > 0) {
+            setTimeout(() => {
+                alert(`יש לך ${activeAlerts.length} משימות דחופות להיום שממתינות לטיפול!`);
+            }, 1500);
+        }
+    }
+
+
+    /* צ'אט פנימי קבוצתי */
+    function renderChat() {
+        const container = document.getElementById('chatMessages');
+        if(!container) return;
+        container.innerHTML = '';
+
+        chatMessages.forEach(m => {
+            const isSelf = m.user === currentUser.name;
+            const b = document.createElement('div');
+            b.className = `chat-bubble ${isSelf ? 'self' : 'other'}`;
+            b.innerHTML = `
+                <strong>${m.user}:</strong> ${m.text}
+                <span class="chat-meta">${m.time}</span>
+            `;
+            container.appendChild(b);
+        });
+
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if(!text) return;
+
+        chatMessages.push({
+            user: currentUser.name,
+            text: text,
+            time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+        });
+
+        localStorage.setItem('dror_chat_msg', JSON.stringify(chatMessages));
+        input.value = '';
+        renderChat();
+    }
+
+
+    /* ניהול משתמשים וקטגוריות */
+    function createNewUser() {
+        const fullName = document.getElementById('addFullName').value.trim();
+        const username = document.getElementById('addUsername').value.trim();
+        const phone = document.getElementById('addPhone').value.trim();
+        const title = document.getElementById('addTitle').value.trim();
+        const password = document.getElementById('addPassword').value.trim();
+        const permission = document.getElementById('addPermission').value;
+
+        const checkedCats = Array.from(document.querySelectorAll('input[name="user_cat_access"]:checked')).map(el => el.value);
+
+        if(!fullName || !username || !password) {
+            alert("חובה למלא שם מלא, שם משתמש וסיסמה!");
+            return;
+        }
+
+        if(systemUsers.some(u => u['שם משתמש'].toLowerCase() === username.toLowerCase())) {
+            alert("שם המשתמש הזה כבר תפוס!");
+            return;
+        }
+
+        const newUser = {
+            "שם מלא": fullName,
+            "שם משתמש": username,
+            "טלפון": phone || "—",
+            "תפקיד": title || "מנהל",
+            "סיסמה": password,
+            "הרשאה": permission,
+            "קטגוריות": checkedCats
+        };
+
+        systemUsers.push(newUser);
+        localStorage.setItem('dror_system_users', JSON.stringify(systemUsers));
+        
+        document.getElementById('addFullName').value = '';
+        document.getElementById('addUsername').value = '';
+        document.getElementById('addPhone').value = '';
+        document.getElementById('addTitle').value = '';
+        document.getElementById('addPassword').value = '';
+        document.querySelectorAll('input[name="user_cat_access"]').forEach(el => el.checked = false);
+
+        alert("המשתמש החדש נוסף בהצלחה!");
+        renderUsersTable();
+        logAction(`הוסיף משתמש חדש: ${fullName} ברמת הרשאה ${permission}`);
+    }
+
+    function removeUser(index) {
+        if(systemUsers[index]['הרשאה'] === 'מנהל על') {
+            alert("לא ניתן למחוק את מנהל העל הראשי!");
+            return;
+        }
+        if(confirm(`האם אתה בטוח שברצונך למחוק את ${systemUsers[index]['שם מלא']}?`)) {
+            const removed = systemUsers[index]['שם מלא'];
+            systemUsers.splice(index, 1);
+            localStorage.setItem('dror_system_users', JSON.stringify(systemUsers));
+            renderUsersTable();
+            logAction(`מחק את המשתמש ${removed}`);
+        }
+    }
+
+    function renderUsersTable() {
+        const tbody = document.getElementById('usersTableBody');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+
+        systemUsers.forEach((user, index) => {
+            const allowed = user['קטגוריות'] && user['קטגוריות'].length > 0 ? user['קטגוריות'].join(', ') : 'גישה מלאה';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${user['שם מלא']}</td>
+                <td>${user['שם משתמש']}</td>
+                <td>${user['תפקיד']}</td>
+                <td><span class="badge" style="background:${user['הרשאה'] === 'מנהל על' ? '#db2777' : 'var(--primary)'}; color:white;">${user['הרשאה']}</span></td>
+                <td><span style="font-size:12px; max-width:200px; display:block; overflow:hidden; text-overflow:ellipsis;">${allowed}</span></td>
+                <td>
+                    ${user['הרשאה'] !== 'מנהל על' ? `<button class="action-btn" style="background:var(--danger); color:white; padding:4px 8px;" onclick="removeUser(${index})"><i class="fa-solid fa-trash"></i> מחק</button>` : '—'}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function addDynamicCategory() {
+        const input = document.getElementById('newCategoryInput');
+        const cat = input.value.trim();
+        if(!cat) return;
+
+        if(!dynamicCategories.includes(cat)) {
+            dynamicCategories.push(cat);
+            localStorage.setItem('dror_categories', JSON.stringify(dynamicCategories));
+            input.value = '';
+            buildCategoryFilter();
+            buildCategoryCheckboxes();
+            alert(`הקטגוריה "${cat}" נוספה בהצלחה!`);
+            logAction(`הוסיף קטגוריה חדשה למערכת: ${cat}`);
+        } else {
+            alert("קטגוריה זו כבר קיימת.");
+        }
+    }
+
+
+    /* ניווט בין מסכים */
+    function switchView(view) {
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        
+        if(view === 'vendors') {
+            currentMode = 'all';
+            document.getElementById('vendorsSection').classList.add('active');
+            document.getElementById('navVendors').classList.add('active');
+            renderVendors(false);
+        } else if(view === 'favorites') {
+            currentMode = 'favorites';
+            document.getElementById('vendorsSection').classList.add('active');
+            document.getElementById('navFavs').classList.add('active');
+            renderVendors(false);
+        } else if(view === 'requests') {
+            document.getElementById('requestsSection').classList.add('active');
+            document.getElementById('navRequests').classList.add('active');
+            renderRequests();
+        } else if(view === 'chat') {
+            document.getElementById('chatSection').classList.add('active');
+            document.getElementById('navChat').classList.add('active');
+            renderChat();
+        } else if(view === 'tasks') {
+            document.getElementById('tasksSection').classList.add('active');
+            document.getElementById('navTasks').classList.add('active');
+            renderTasks();
+        } else if(view === 'users') {
+            document.getElementById('usersSection').classList.add('active');
+            document.getElementById('navUsers').classList.add('active');
+            renderUsersTable();
+        }
+    }
+
+    function exportToExcel() {
+        const ws = XLSX.utils.json_to_sheet(vendors);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "ספקים מעודכן");
+        XLSX.writeFile(wb, "ספקים מעודכן.xlsx");
+    }
+</script>
 </body>
 </html>
