@@ -3,259 +3,574 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ספר טלפונים עסקי - ניהול מתקדם</title>
+    <title>ספר טלפונים עסקי חכם</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome לאייקונים -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Heebo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body class="bg-gray-50 min-h-screen pb-12">
 
-    <!-- סרגל ניווט עליון מהיר -->
-    <nav class="bg-white shadow-sm border-b border-gray-200 py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-blue-600 flex items-center gap-2">
-                <i class="fa-solid fa-address-book"></i>
-                <span>ספר טלפונים ארגוני</span>
-            </h1>
-            <div class="flex gap-2">
-                <button onclick="switchView('user')" id="btn-user-view" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow">
-                    <i class="fa-solid fa-users ml-1"></i> תצוגת משתמשים
-                </button>
-                <button onclick="switchView('admin')" id="btn-admin-view" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200">
-                    <i class="fa-solid fa-user-shield ml-1"></i> לוח מנהל (Admin)
-                </button>
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-md py-6 px-4">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight">📞 ספר טלפונים עסקי</h1>
+                <p class="text-blue-100 text-sm mt-1">ניהול וחיפוש אנשי קשר ועסקים בקלות ובמהירות</p>
             </div>
+            <!-- Toggle Admin Mode Button -->
+            <button id="toggleAdminBtn" onclick="toggleAdminMode()" class="bg-white/20 hover:bg-white/30 text-white font-medium px-5 py-2.5 rounded-lg transition-all border border-white/10 flex items-center gap-2">
+                <span id="adminBtnIcon">⚙️</span>
+                <span id="adminBtnText">אזור מנהל</span>
+            </button>
         </div>
-    </nav>
+    </header>
 
-    <main class="max-w-7xl mx-auto p-6">
-        
-        <!-- ================= תצוגת משתמש רגיל ================= -->
-        <section id="user-view" class="space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 class="text-2xl font-bold mb-4">חיפוש מהיר</h2>
-                <input type="text" id="user-search" oninput="renderUserDirectory()" placeholder="חפש עובד, תפקיד או קטגוריה..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <main class="max-w-6xl mx-auto px-4 mt-8">
+
+        <!-- ================= PUBLIC VIEW ================= -->
+        <section id="publicView" class="space-y-6">
+            <!-- Search and Filter Bar -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center">
+                <div class="relative w-full md:flex-1">
+                    <span class="absolute inset-y-0 right-3 flex items-center text-gray-400">🔍</span>
+                    <input type="text" id="searchInput" oninput="filterDirectory()" placeholder="חיפוש לפי שם, טלפון או תיאור..." class="w-full pr-10 pl-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                </div>
+                <div class="w-full md:w-64">
+                    <select id="categoryFilter" onchange="filterDirectory()" class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm bg-white">
+                        <option value="all">כל הקטגוריות</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- רשימת אנשי קשר לפי קטגוריות פעילות בלבד -->
-            <div id="user-directory-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- יתמלא דינמית על ידי JS -->
+            <!-- Contacts Grid -->
+            <div id="contactsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Content -->
+            </div>
+            
+            <div id="noResults" class="hidden text-center py-12 text-gray-500">
+                <p class="text-lg">לא נמצאו אנשי קשר מתאימים לחיפוש שלך.</p>
             </div>
         </section>
 
-        <!-- ================= תצוגת מנהל משודרגת (Admin Dashboard) ================= -->
-        <section id="admin-view" class="hidden space-y-8">
-            <!-- כותרת וסטטיסטיקה מהירה -->
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6 rounded-2xl shadow-md">
-                <div>
-                    <h2 class="text-2xl font-bold">לוח בקרה וניהול</h2>
-                    <p class="text-blue-100 text-sm mt-1">נהל קטגוריות, הרשאות צפייה ואנשי קשר בצורה מהירה</p>
+        <!-- ================= ADMIN PANEL ================= -->
+        <section id="adminPanel" class="hidden space-y-6">
+            
+            <!-- Admin Header & Stats -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">🛡️ לוח בקרה למנהל</h2>
+                        <p class="text-gray-500 text-sm">נהל קטגוריות, אנשי קשר והגדרות נראות בזמן אמת</p>
+                    </div>
+                    <!-- Quick Stats -->
+                    <div class="flex gap-4 w-full md:w-auto">
+                        <div class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-center flex-1 md:flex-initial">
+                            <div class="text-xs font-bold uppercase">סך הכל</div>
+                            <div id="statTotalContacts" class="text-xl font-extrabold">0</div>
+                        </div>
+                        <div class="bg-green-50 text-green-700 px-4 py-2 rounded-lg text-center flex-1 md:flex-initial">
+                            <div class="text-xs font-bold uppercase">קט' פעילות</div>
+                            <div id="statActiveCats" class="text-xl font-extrabold">0</div>
+                        </div>
+                        <div class="bg-red-50 text-red-700 px-4 py-2 rounded-lg text-center flex-1 md:flex-initial">
+                            <div class="text-xs font-bold uppercase">קט' מושבתות</div>
+                            <div id="statInactiveCats" class="text-xl font-extrabold">0</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex gap-4">
-                    <div class="bg-white/10 px-4 py-2 rounded-lg text-center">
-                        <span class="block text-xs text-blue-200">סה"כ קטגוריות</span>
-                        <span id="stats-total-cats" class="text-xl font-bold">0</span>
-                    </div>
-                    <div class="bg-white/10 px-4 py-2 rounded-lg text-center">
-                        <span class="block text-xs text-blue-200">פעילות</span>
-                        <span id="stats-active-cats" class="text-xl font-bold text-green-300">0</span>
-                    </div>
+
+                <!-- Admin Tabs -->
+                <div class="flex border-b border-gray-200">
+                    <button onclick="switchAdminTab('contacts')" id="tabContacts" class="border-b-2 border-blue-600 px-6 py-2.5 font-medium text-blue-600 text-sm focus:outline-none transition-all">
+                        📋 ניהול אנשי קשר
+                    </button>
+                    <button onclick="switchAdminTab('categories')" id="tabCategories" class="border-b-2 border-transparent px-6 py-2.5 font-medium text-gray-500 hover:text-gray-700 text-sm focus:outline-none transition-all">
+                        🏷️ ניהול קטגוריות ונראות
+                    </button>
                 </div>
             </div>
 
-            <!-- אזור ניהול קטגוריות (פרודוקטיבי ומהיר) -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900">קטגוריות והרשאות תצוגה</h3>
-                        <p class="text-sm text-gray-500">לחיצה על כפתור הסטטוס תסתיר או תציג את הקטגוריה ואנשי הקשר שבה מהמשתמשים.</p>
-                    </div>
-                    <!-- הוספת קטגוריה מהירה inline -->
-                    <div class="flex gap-2">
-                        <input type="text" id="new-cat-input" placeholder="שם קטגוריה חדשה..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-                        <button onclick="addCategory()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-                            <i class="fa-solid fa-plus"></i> הוספה
-                        </button>
-                    </div>
+            <!-- Tab 1: Manage Contacts -->
+            <div id="adminTabContactsContent" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Add/Edit Form -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
+                    <h3 id="formTitle" class="text-lg font-bold text-gray-800 mb-4">👤 הוספת איש קשר חדש</h3>
+                    <form id="contactForm" onsubmit="saveContact(event)" class="space-y-4">
+                        <input type="hidden" id="editContactId">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">שם העסק / איש קשר *</label>
+                            <input type="text" id="contactName" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">קטגוריה *</label>
+                            <select id="contactCategory" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm bg-white">
+                                <!-- Dynamic Options -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">מספר טלפון *</label>
+                            <input type="tel" id="contactPhone" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm text-left" dir="ltr">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">כתובת / מיקום</label>
+                            <input type="text" id="contactAddress" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">תיאור קצר</label>
+                            <textarea id="contactDescription" rows="2" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"></textarea>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition-all shadow-sm">שמור איש קשר</button>
+                            <button type="button" id="cancelEditBtn" onclick="resetContactForm()" class="hidden bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition-all">ביטול</button>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- טבלת ניהול קטגוריות מהירה -->
-                <div class="overflow-x-auto">
+                <!-- Contacts Table/List for Admin -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 overflow-x-auto">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">רשימת אנשי קשר קיימים</h3>
                     <table class="w-full text-right border-collapse">
                         <thead>
-                            <tr class="border-b border-gray-200 bg-gray-50 text-sm text-gray-500 font-semibold">
-                                <th class="p-3">שם הקטגוריה</th>
-                                <th class="p-3 text-center">סטטוס צפייה</th>
-                                <th class="p-3 text-center">כמות אנשי קשר</th>
-                                <th class="p-3 text-left">פעולות</th>
+                            <tr class="border-b border-gray-100 text-gray-400 text-xs font-bold">
+                                <th class="pb-3">שם</th>
+                                <th class="pb-3">קטגוריה</th>
+                                <th class="pb-3">טלפון</th>
+                                <th class="pb-3 text-left">פעולות</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-categories-table">
-                            <!-- יתמלא דינמית על ידי JS -->
+                        <tbody id="adminContactsTable" class="divide-y divide-gray-50 text-sm">
+                            <!-- Dynamic Content -->
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <!-- Tab 2: Manage Categories (Active / Inactive) -->
+            <div id="adminTabCategoriesContent" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Add Category Form -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">🏷️ הוספת קטגוריה חדשה</h3>
+                    <form id="categoryForm" onsubmit="addCategory(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">שם הקטגוריה *</label>
+                            <input type="text" id="newCategoryName" required placeholder="לדוגמה: שירותי מחשוב" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition-all shadow-sm">צור קטגוריה</button>
+                    </form>
+                </div>
+
+                <!-- Categories Settings Table -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 overflow-x-auto">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-bold text-gray-800">ניהול נראות קטגוריות</h3>
+                        <p class="text-xs text-gray-500">השבתת קטגוריה תסתיר אותה ואת כל העסקים המשויכים אליה מהצד הציבורי של האתר באופן מיידי.</p>
+                    </div>
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-100 text-gray-400 text-xs font-bold">
+                                <th class="pb-3">שם הקטגוריה</th>
+                                <th class="pb-3">סטטוס תצוגה</th>
+                                <th class="pb-3 text-left">פעולות</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminCategoriesTable" class="divide-y divide-gray-50 text-sm">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </section>
 
     </main>
 
     <script>
-        // נתוני דמו התחלתיים
-        let categories = [
-            { id: 1, name: "הנהלה", active: true },
-            { id: 2, name: "פיתוח ותוכנה", active: true },
-            { id: 3, name: "משאבי אנוש", active: false } // כבוי כברירת מחדל להדגמה
+        // ================= DATA STATE =================
+        let contacts = JSON.parse(localStorage.getItem('contacts')) || [
+            { id: 1, name: "מחשבי העתיד", category: "טכנולוגיה", phone: "050-1234567", address: "הרצל 12, תל אביב", description: "תיקון ומכירת מחשבים וציוד היקפי" },
+            { id: 2, name: "הפיצה של אמיגו", category: "אוכל", phone: "03-9876543", address: "בן גוריון 45, גבעתיים", description: "פיצה איטלקית אמיתית בתנור לבנים" },
+            { id: 3, name: "עו״ד לוי ושות׳", category: "עריכת דין", phone: "09-1112223", address: "אבא הלל 8, רמת גן", description: "מתמחים בדיני עבודה ונדל״ן" }
         ];
 
-        let contacts = [
-            { id: 101, name: "ישראל ישראלי", role: "מנכ\"ל", phone: "050-1234567", catId: 1 },
-            { id: 102, name: "שירה כהן", role: "סמנכ\"ל כספים", phone: "050-7654321", catId: 1 },
-            { id: 103, name: "דניאל לוי", role: "מפתח Fullstack", phone: "052-5556667", catId: 2 },
-            { id: 104, name: "נועה אברהם", role: "מנהלת גיוס", phone: "054-9998887", catId: 3 }
+        let categories = JSON.parse(localStorage.getItem('categories')) || [
+            { id: "טכנולוגיה", name: "טכנולוגיה", active: true },
+            { id: "אוכל", name: "אוכל", active: true },
+            { id: "עריכת דין", name: "עריכת דין", active: true }
         ];
 
-        // מעבר בין מסכים
-        function switchView(view) {
-            const userView = document.getElementById('user-view');
-            const adminView = document.getElementById('admin-view');
-            const btnUser = document.getElementById('btn-user-view');
-            const btnAdmin = document.getElementById('btn-admin-view');
+        let isAdminMode = false;
+        let currentAdminTab = 'contacts';
 
-            if (view === 'user') {
-                userView.classList.remove('hidden');
-                adminView.classList.add('hidden');
-                btnUser.className = "px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow";
-                btnAdmin.className = "px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200";
-                renderUserDirectory();
+        // Save state to LocalStorage
+        function saveData() {
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            localStorage.setItem('categories', JSON.stringify(categories));
+        }
+
+        // ================= INIT =================
+        window.onload = function() {
+            initApp();
+        };
+
+        function initApp() {
+            renderFilters();
+            renderPublicView();
+            renderAdminView();
+            updateStats();
+        }
+
+        // ================= NAVIGATION / TOGGLES =================
+        function toggleAdminMode() {
+            isAdminMode = !isAdminMode;
+            const publicView = document.getElementById('publicView');
+            const adminPanel = document.getElementById('adminPanel');
+            const adminBtnText = document.getElementById('adminBtnText');
+            const adminBtnIcon = document.getElementById('adminBtnIcon');
+
+            if (isAdminMode) {
+                publicView.classList.add('hidden');
+                adminPanel.classList.remove('hidden');
+                adminBtnText.innerText = "תצוגת משתמש";
+                adminBtnIcon.innerText = "👁️";
+                renderAdminView();
             } else {
-                userView.classList.add('hidden');
-                adminView.classList.remove('hidden');
-                btnUser.className = "px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200";
-                btnAdmin.className = "px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow";
-                renderAdminDashboard();
+                publicView.classList.remove('hidden');
+                adminPanel.classList.add('hidden');
+                adminBtnText.innerText = "אזור מנהל";
+                adminBtnIcon.innerText = "⚙️";
+                renderPublicView();
+                renderFilters();
             }
         }
 
-        // --- תצוגת משתמש רגיל ---
-        function renderUserDirectory() {
-            const container = document.getElementById('user-directory-container');
-            const searchQuery = document.getElementById('user-search').value.toLowerCase();
-            container.innerHTML = "";
+        function switchAdminTab(tab) {
+            currentAdminTab = tab;
+            const tabContacts = document.getElementById('tabContacts');
+            const tabCategories = document.getElementById('tabCategories');
+            const contentContacts = document.getElementById('adminTabContactsContent');
+            const contentCategories = document.getElementById('adminTabCategoriesContent');
 
-            // מסננים רק קטגוריות פעילות
-            const activeCategories = categories.filter(cat => cat.active);
+            if (tab === 'contacts') {
+                tabContacts.className = "border-b-2 border-blue-600 px-6 py-2.5 font-medium text-blue-600 text-sm focus:outline-none transition-all";
+                tabCategories.className = "border-b-2 border-transparent px-6 py-2.5 font-medium text-gray-500 hover:text-gray-700 text-sm focus:outline-none transition-all";
+                contentContacts.classList.remove('hidden');
+                contentCategories.classList.add('hidden');
+            } else {
+                tabContacts.className = "border-b-2 border-transparent px-6 py-2.5 font-medium text-gray-500 hover:text-gray-700 text-sm focus:outline-none transition-all";
+                tabCategories.className = "border-b-2 border-blue-600 px-6 py-2.5 font-medium text-blue-600 text-sm focus:outline-none transition-all";
+                contentContacts.classList.add('hidden');
+                contentCategories.classList.remove('hidden');
+            }
+        }
 
+        // ================= STATS =================
+        function updateStats() {
+            document.getElementById('statTotalContacts').innerText = contacts.length;
+            document.getElementById('statActiveCats').innerText = categories.filter(c => c.active).length;
+            document.getElementById('statInactiveCats').innerText = categories.filter(c => !c.active).length;
+        }
+
+        // ================= RENDERING PUBLIC VIEW =================
+        function renderFilters() {
+            const filterSelect = document.getElementById('categoryFilter');
+            const activeCategories = categories.filter(c => c.active);
+            
+            let html = '<option value="all">כל הקטגוריות</option>';
             activeCategories.forEach(cat => {
-                // מוצאים את אנשי הקשר השייכים לקטגוריה הזו שתואמים לחיפוש
-                const catContacts = contacts.filter(contact => {
-                    if (contact.catId !== cat.id) return false;
-                    return contact.name.toLowerCase().includes(searchQuery) || 
-                           contact.role.toLowerCase().includes(searchQuery) ||
-                           contact.phone.includes(searchQuery);
-                });
+                html += `<option value="${cat.id}">${cat.name}</option>`;
+            });
+            filterSelect.innerHTML = html;
+        }
 
-                // אם יש אנשי קשר או שאין חיפוש פעיל - נציג את הקטגוריה
-                if (catContacts.length > 0 || searchQuery === "") {
-                    const catDiv = document.createElement('div');
-                    catDiv.className = "bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-4";
-                    
-                    catDiv.innerHTML = `
-                        <h3 class="text-lg font-bold text-blue-800 border-b pb-2 flex justify-between items-center">
-                            <span>${cat.name}</span>
-                            <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">${catContacts.length} עובדים</span>
-                        </h3>
-                        <div class="space-y-3">
-                            ${catContacts.map(c => `
-                                <div class="flex justify-between items-center p-2 rounded-lg hover:bg-gray-50 transition">
-                                    <div>
-                                        <div class="font-semibold text-gray-900">${c.name}</div>
-                                        <div class="text-xs text-gray-500">${c.role}</div>
-                                    </div>
-                                    <a href="tel:${c.phone}" class="flex items-center gap-2 text-sm text-blue-600 font-semibold hover:underline">
-                                        <i class="fa-solid fa-phone text-xs"></i> ${c.phone}
-                                    </a>
+        function renderPublicView() {
+            const grid = document.getElementById('contactsGrid');
+            const activeCategoryIds = categories.filter(c => c.active).map(c => c.id);
+            
+            // Only show contacts where their category is active
+            const visibleContacts = contacts.filter(contact => activeCategoryIds.includes(contact.category));
+
+            if (visibleContacts.length === 0) {
+                grid.innerHTML = '';
+                document.getElementById('noResults').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('noResults').classList.add('hidden');
+            let html = '';
+            visibleContacts.forEach(contact => {
+                html += `
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start gap-2 mb-2">
+                                <h3 class="text-lg font-bold text-gray-800">${contact.name}</h3>
+                                <span class="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full">${contact.category}</span>
+                            </div>
+                            <p class="text-gray-500 text-xs mb-4 line-clamp-2">${contact.description || 'אין תיאור זמין.'}</p>
+                        </div>
+                        <div class="border-t border-gray-100 pt-3 space-y-2 text-sm text-gray-600">
+                            <div class="flex items-center gap-2">
+                                <span>📞</span>
+                                <a href="tel:${contact.phone}" class="font-semibold text-blue-600 hover:underline" dir="ltr">${contact.phone}</a>
+                            </div>
+                            ${contact.address ? `
+                            <div class="flex items-center gap-2 text-xs">
+                                <span>📍</span>
+                                <span>${contact.address}</span>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
+        function filterDirectory() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const selectedCat = document.getElementById('categoryFilter').value;
+            const grid = document.getElementById('contactsGrid');
+
+            const activeCategoryIds = categories.filter(c => c.active).map(c => c.id);
+
+            const filtered = contacts.filter(contact => {
+                const matchesCategory = activeCategoryIds.includes(contact.category);
+                const matchesSearch = contact.name.toLowerCase().includes(query) || 
+                                      contact.phone.includes(query) || 
+                                      (contact.description && contact.description.toLowerCase().includes(query));
+                const matchesFilter = selectedCat === 'all' || contact.category === selectedCat;
+                
+                return matchesCategory && matchesSearch && matchesFilter;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                document.getElementById('noResults').classList.remove('hidden');
+            } else {
+                document.getElementById('noResults').classList.add('hidden');
+                let html = '';
+                filtered.forEach(contact => {
+                    html += `
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start gap-2 mb-2">
+                                    <h3 class="text-lg font-bold text-gray-800">${contact.name}</h3>
+                                    <span class="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full">${contact.category}</span>
                                 </div>
-                            `).join('')}
-                            ${catContacts.length === 0 ? '<p class="text-sm text-gray-400 italic">אין אנשי קשר בקטגוריה זו</p>' : ''}
+                                <p class="text-gray-500 text-xs mb-4 line-clamp-2">${contact.description || 'אין תיאור זמין.'}</p>
+                            </div>
+                            <div class="border-t border-gray-100 pt-3 space-y-2 text-sm text-gray-600">
+                                <div class="flex items-center gap-2">
+                                    <span>📞</span>
+                                    <a href="tel:${contact.phone}" class="font-semibold text-blue-600 hover:underline" dir="ltr">${contact.phone}</a>
+                                </div>
+                                ${contact.address ? `
+                                <div class="flex items-center gap-2 text-xs">
+                                    <span>📍</span>
+                                    <span>${contact.address}</span>
+                                </div>` : ''}
+                            </div>
                         </div>
                     `;
-                    container.appendChild(catDiv);
-                }
-            });
-        }
-
-        // --- תצוגת מנהל משודרגת ---
-        function renderAdminDashboard() {
-            const tbody = document.getElementById('admin-categories-table');
-            tbody.innerHTML = "";
-
-            // עדכון סטטיסטיקה
-            document.getElementById('stats-total-cats').innerText = categories.length;
-            document.getElementById('stats-active-cats').innerText = categories.filter(c => c.active).length;
-
-            categories.forEach(cat => {
-                const count = contacts.filter(c => c.catId === cat.id).length;
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-gray-100 hover:bg-gray-50 transition text-sm";
-
-                tr.innerHTML = `
-                    <td class="p-3 font-semibold text-gray-800">${cat.name}</td>
-                    <td class="p-3 text-center">
-                        <button onclick="toggleCategoryStatus(${cat.id})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition cursor-pointer ${
-                            cat.active 
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                            : 'bg-red-100 text-red-800 hover:bg-red-200'
-                        }">
-                            <span class="h-2 w-2 rounded-full ${cat.active ? 'bg-green-500' : 'bg-red-500'}"></span>
-                            ${cat.active ? 'פעיל (גלוי למשתמש)' : 'לא פעיל (מוסתר)'}
-                        </button>
-                    </td>
-                    <td class="p-3 text-center text-gray-500">${count}</td>
-                    <td class="p-3 text-left">
-                        <button onclick="deleteCategory(${cat.id})" class="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 rounded hover:bg-red-50 transition">
-                            <i class="fa-solid fa-trash-can"></i> מחק קטגוריה
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // שינוי סטטוס קטגוריה (פעיל/לא פעיל)
-        function toggleCategoryStatus(id) {
-            const cat = categories.find(c => c.id === id);
-            if (cat) {
-                cat.active = !cat.active;
-                renderAdminDashboard();
+                });
+                grid.innerHTML = html;
             }
         }
 
-        // הוספת קטגוריה חדשה מהירה
-        function addCategory() {
-            const input = document.getElementById('new-cat-input');
-            const name = input.value.trim();
+        // ================= RENDERING ADMIN VIEW =================
+        function renderAdminView() {
+            renderAdminContactsTable();
+            renderAdminCategoriesTable();
+            renderContactFormCategories();
+            updateStats();
+        }
+
+        function renderAdminContactsTable() {
+            const tbody = document.getElementById('adminContactsTable');
+            let html = '';
+            contacts.forEach(contact => {
+                const isCatActive = categories.find(c => c.id === contact.category)?.active !== false;
+                html += `
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="py-3 font-semibold text-gray-800">
+                            ${contact.name}
+                            ${!isCatActive ? '<span class="text-xs text-red-500 font-normal block">(בקטגוריה מושבתת - מוסתר מהציבור)</span>' : ''}
+                        </td>
+                        <td class="py-3"><span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">${contact.category}</span></td>
+                        <td class="py-3" dir="ltr">${contact.phone}</td>
+                        <td class="py-3 text-left">
+                            <button onclick="editContact(${contact.id})" class="text-blue-600 hover:text-blue-800 ml-3 font-medium text-xs">✏️ ערוך</button>
+                            <button onclick="deleteContact(${contact.id})" class="text-red-600 hover:text-red-800 font-medium text-xs">🗑️ מחק</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="4" class="text-center py-4 text-gray-400">אין אנשי קשר רשומים.</td></tr>';
+        }
+
+        function renderAdminCategoriesTable() {
+            const tbody = document.getElementById('adminCategoriesTable');
+            let html = '';
+            categories.forEach(cat => {
+                const contactCount = contacts.filter(c => c.category === cat.id).length;
+                html += `
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="py-4">
+                            <span class="font-semibold text-gray-800">${cat.name}</span>
+                            <span class="text-xs text-gray-400 block">${contactCount} אנשי קשר משויכים</span>
+                        </td>
+                        <td class="py-4">
+                            <button onclick="toggleCategoryStatus('${cat.id}')" class="relative inline-flex items-center cursor-pointer select-none">
+                                <div class="w-11 h-6 rounded-full transition-colors ${cat.active ? 'bg-green-500' : 'bg-gray-200'}"></div>
+                                <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${cat.active ? 'translate-x-5' : 'translate-x-0'}"></div>
+                                <span class="mr-3 text-xs font-semibold ${cat.active ? 'text-green-600' : 'text-gray-400'}">
+                                    ${cat.active ? 'פעיל' : 'לא פעיל'}
+                                </span>
+                            </button>
+                        </td>
+                        <td class="py-4 text-left">
+                            <button onclick="deleteCategory('${cat.id}')" class="text-red-600 hover:text-red-800 font-medium text-xs">🗑️ הסר קטגוריה</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="3" class="text-center py-4 text-gray-400">אין קטגוריות.</td></tr>';
+        }
+
+        function renderContactFormCategories() {
+            const select = document.getElementById('contactCategory');
+            let html = '';
+            categories.forEach(cat => {
+                html += `<option value="${cat.id}">${cat.name}</option>`;
+            });
+            select.innerHTML = html || '<option value="">אנא צור קטגוריה תחילה</option>';
+        }
+
+        // ================= CRUD: CONTACTS =================
+        function saveContact(e) {
+            e.preventDefault();
+            const id = document.getElementById('editContactId').value;
+            const name = document.getElementById('contactName').value;
+            const category = document.getElementById('contactCategory').value;
+            const phone = document.getElementById('contactPhone').value;
+            const address = document.getElementById('contactAddress').value;
+            const description = document.getElementById('contactDescription').value;
+
+            if (!category) {
+                alert("יש ליצור לפחות קטגוריה אחת לפני הוספת איש קשר!");
+                return;
+            }
+
+            if (id) {
+                // Edit mode
+                const index = contacts.findIndex(c => c.id == id);
+                if (index !== -1) {
+                    contacts[index] = { id: parseInt(id), name, category, phone, address, description };
+                }
+            } else {
+                // Add mode
+                const newContact = {
+                    id: Date.now(),
+                    name,
+                    category,
+                    phone,
+                    address,
+                    description
+                };
+                contacts.push(newContact);
+            }
+
+            saveData();
+            resetContactForm();
+            renderAdminView();
+        }
+
+        function editContact(id) {
+            const contact = contacts.find(c => c.id == id);
+            if (!contact) return;
+
+            document.getElementById('editContactId').value = contact.id;
+            document.getElementById('contactName').value = contact.name;
+            document.getElementById('contactCategory').value = contact.category;
+            document.getElementById('contactPhone').value = contact.phone;
+            document.getElementById('contactAddress').value = contact.address || '';
+            document.getElementById('contactDescription').value = contact.description || '';
+
+            document.getElementById('formTitle').innerText = "✏️ עריכת איש קשר";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+        }
+
+        function deleteContact(id) {
+            if (confirm("האם אתה בטוח שברצונך למחוק איש קשר זה?")) {
+                contacts = contacts.filter(c => c.id != id);
+                saveData();
+                renderAdminView();
+            }
+        }
+
+        function resetContactForm() {
+            document.getElementById('contactForm').reset();
+            document.getElementById('editContactId').value = '';
+            document.getElementById('formTitle').innerText = "👤 הוספת איש קשר חדש";
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+        }
+
+        // ================= CRUD: CATEGORIES =================
+        function addCategory(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('newCategoryName');
+            const name = nameInput.value.trim();
+
             if (!name) return;
 
-            const newId = categories.length ? Math.max(...categories.map(c => c.id)) + 1 : 1;
-            categories.push({ id: newId, name: name, active: true });
-            input.value = "";
-            renderAdminDashboard();
+            // Simple uniqueness check
+            if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+                alert("קטגוריה זו כבר קיימת!");
+                return;
+            }
+
+            const newCat = {
+                id: name,
+                name: name,
+                active: true
+            };
+
+            categories.push(newCat);
+            saveData();
+            nameInput.value = '';
+            renderAdminView();
         }
 
-        // מחיקת קטגוריה
-        function deleteCategory(id) {
-            if (confirm("האם אתה בטוח שברצונך למחוק קטגוריה זו? אנשי הקשר המשויכים אליה לא יימחקו אך לא ישוייכו יותר.")) {
-                categories = categories.filter(c => c.id !== id);
-                renderAdminDashboard();
+        function toggleCategoryStatus(catId) {
+            const cat = categories.find(c => c.id === catId);
+            if (cat) {
+                cat.active = !cat.active;
+                saveData();
+                renderAdminView();
             }
         }
 
-        // טעינה ראשונית
-        window.onload = () => {
-            renderUserDirectory();
-        };
+        function deleteCategory(catId) {
+            const associatedContacts = contacts.filter(c => c.category === catId);
+            let message = "האם אתה בטוח שברצונך למחוק קטגוריה זו?";
+            if (associatedContacts.length > 0) {
+                message = `אזהרה: ישנם ${associatedContacts.length} אנשי קשר המשויכים לקטגוריה זו. מחיקתה תשאיר אותם ללא קטגוריה. להמשיך?`;
+            }
+
+            if (confirm(message)) {
+                categories = categories.filter(c => c.id !== catId);
+                // Assign empty/default to broken categories
+                contacts.forEach(c => {
+                    if (c.category === catId) c.category = '';
+                });
+                saveData();
+                renderAdminView();
+            }
+        }
     </script>
 </body>
 </html>
