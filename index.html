@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ספר טלפונים דיגיטלי - ספקים</title>
+    <title>ספר טלפונים דיגיטלי - ספקים ושותפים</title>
     <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -53,7 +53,7 @@
                     <input type="text" id="searchInput" oninput="renderUserList()" placeholder="חפש ספק, תחום או איש קשר..." class="w-full pr-11 pl-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                 </div>
                 
-                <!-- רשימת קטגוריות לסינון מהיר (רק פעילות יוצגו כאן!) -->
+                <!-- רשימת קטגוריות לסינון מהיר (יוצגו רק קטגוריות פעילות!) -->
                 <div class="flex flex-wrap gap-2 w-full md:w-2/3" id="userCategoriesContainer">
                     <!-- ייווצר דינמית -->
                 </div>
@@ -70,14 +70,14 @@
         <!-- ========================================== -->
         <main id="adminView" class="hidden space-y-6">
             
-            <!-- כרטיסי מידע מהיר (Stats) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- כרטיסי מידע מהיר (Stats Dashboard) -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="glass p-4 rounded-xl shadow flex items-center gap-4 border-r-4 border-indigo-600">
                     <div class="p-3 bg-indigo-100 rounded-full text-indigo-600">
                         <i class="fa-solid fa-truck-field text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-sm text-gray-500">סה"כ ספקים</div>
+                        <div class="text-xs text-gray-500">סה"כ ספקים</div>
                         <div class="text-2xl font-bold" id="statTotalVendors">0</div>
                     </div>
                 </div>
@@ -86,8 +86,17 @@
                         <i class="fa-solid fa-folder text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-sm text-gray-500">קטגוריות פעילות</div>
+                        <div class="text-xs text-gray-500">קטגוריות פעילות</div>
                         <div class="text-2xl font-bold" id="statActiveCategories">0</div>
+                    </div>
+                </div>
+                <div class="glass p-4 rounded-xl shadow flex items-center gap-4 border-r-4 border-rose-500">
+                    <div class="p-3 bg-rose-100 rounded-full text-rose-600">
+                        <i class="fa-solid fa-folder-minus text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">מוסתרות (לא פעיל)</div>
+                        <div class="text-2xl font-bold" id="statInactiveCategories">0</div>
                     </div>
                 </div>
                 <div class="glass p-4 rounded-xl shadow flex items-center gap-4 border-r-4 border-amber-500">
@@ -95,7 +104,7 @@
                         <i class="fa-solid fa-star text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-sm text-gray-500">ממוצע דירוגים</div>
+                        <div class="text-xs text-gray-500">ממוצע דירוגים</div>
                         <div class="text-2xl font-bold" id="statAvgRating">0.0</div>
                     </div>
                 </div>
@@ -118,7 +127,7 @@
                         <label class="text-xs font-bold text-gray-500">הוסף קטגוריה חדשה</label>
                         <div class="flex gap-2">
                             <input type="text" id="newCategoryInput" placeholder="שם קטגוריה..." class="flex-grow px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <button onclick="addNewCategory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm transition-all">
+                            <button onclick="addNewCategory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-sm transition-all">
                                 <i class="fa-solid fa-plus"></i>
                             </button>
                         </div>
@@ -126,17 +135,17 @@
 
                     <!-- רשימת הקטגוריות עם כפתור Toggle (פעיל/לא פעיל) -->
                     <div class="space-y-3">
-                        <label class="text-xs font-bold text-gray-500">מצב קטגוריות (לחץ לשינוי סטטוס):</label>
+                        <label class="text-xs font-bold text-gray-500">סטטוס קטגוריות (לחץ להסתרה/הצגה מהירה):</label>
                         <div id="adminCategoriesContainer" class="space-y-2">
                             <!-- ייווצר דינמית -->
                         </div>
                     </div>
                 </div>
 
-                <!-- עמודה מרכזית ושמאלית: ניהול ספקים מהיר (הוספה/עריכה וטבלה) -->
+                <!-- עמודה מרכזית ושמאלית: ניהול ספקים מהיר -->
                 <div class="lg:col-span-2 space-y-6">
                     
-                    <!-- טופס מהיר להוספה / עריכת ספק (סגור כברירת מחדל, נפתח בלחיצה) -->
+                    <!-- טופס הוספה / עריכת ספק (סגור כברירת מחדל, נפתח בלחיצה/עריכה) -->
                     <div class="glass p-5 rounded-2xl shadow-lg">
                         <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleAddForm()">
                             <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -193,7 +202,7 @@
                         </form>
                     </div>
 
-                    <!-- טבלת ניהול ספקים נוחה ופרודקטיבית -->
+                    <!-- טבלת ניהול ספקים מתקדמת ופרודקטיבית -->
                     <div class="glass p-5 rounded-2xl shadow-lg overflow-x-auto">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-bold text-gray-800">רשימת ספקים במערכת</h3>
@@ -206,7 +215,7 @@
                                     <th class="py-3 px-4 font-bold">שם הספק</th>
                                     <th class="py-3 px-4 font-bold">קטגוריה</th>
                                     <th class="py-3 px-4 font-bold">איש קשר וטלפון</th>
-                                    <th class="py-3 px-4 font-bold">דירוג</th>
+                                    <th class="py-3 px-4 font-bold">דירוג ממוצע</th>
                                     <th class="py-3 px-4 font-bold text-center">פעולות</th>
                                 </tr>
                             </thead>
@@ -222,7 +231,7 @@
     </div>
 
     <script>
-        // --- נתונים דיפולטיביים מובנים (כולל ספקי החברה הקיימים) ---
+        // --- נתונים דיפולטיביים מובנים (שחזור הנתונים המלאים שלך) ---
         const defaultCategories = [
             { id: "transport", name: "הובלות ולוגיסטיקה", active: true },
             { id: "tech", name: "טכנולוגיה ומחשוב", active: true },
@@ -232,35 +241,38 @@
 
         const defaultVendors = [
             {
-                name: "א.ס. לב הובלה ואחסנה בע"מ",
+                name: "א.ס. לב הובלה ואחסנה בע\"מ",
                 category: "transport",
                 contact: "אבי לב",
                 phone: "050-1234567",
                 email: "avi@as-lev.co.il",
                 rating: 4.8,
+                ratingsCount: 5,
                 notes: "ספק הובלות ראשי, אמינות גבוהה מאוד ומענה סביב השעון."
             },
             {
-                name: "מיקוש מילן בע"מ",
+                name: "מיקוש מילן בע\"מ",
                 category: "general",
                 contact: "רוני מילן",
                 phone: "03-9876543",
                 email: "office@milan-m.co.il",
                 rating: 4.5,
+                ratingsCount: 3,
                 notes: "אספקת ציוד היקפי ומשרדי שוטף."
             },
             {
-                name: "הום סנטר בע"מ",
+                name: "הום סנטר בע\"מ",
                 category: "construction",
                 contact: "מחלקת עסקים",
                 phone: "1-700-70-77-88",
                 email: "b2b@homecenter.co.il",
                 rating: 4.2,
+                ratingsCount: 10,
                 notes: "רכישת כלי עבודה וחומרי בניין באשראי עסקי."
             }
         ];
 
-        // טעינה ראשונית מ-LocalStorage או שימוש בנתוני ברירת מחדל
+        // טעינה מ-LocalStorage או התבססות על נתוני המקור
         let categories = JSON.parse(localStorage.getItem('phonebook_categories')) || defaultCategories;
         let vendors = JSON.parse(localStorage.getItem('phonebook_vendors')) || defaultVendors;
         
@@ -337,13 +349,14 @@
                 phone: document.getElementById('vendorPhone').value,
                 email: document.getElementById('vendorEmail').value,
                 rating: parseFloat(document.getElementById('vendorRating').value) || 5,
+                ratingsCount: editIndex !== '' ? (vendors[editIndex].ratingsCount || 1) : 1,
                 notes: document.getElementById('vendorNotes').value
             };
 
             if (editIndex !== '') {
-                vendors[editIndex] = vendorData; // עדכון
+                vendors[editIndex] = vendorData; // עדכון ספק קיים
             } else {
-                vendors.push(vendorData); // יצירת חדש
+                vendors.push(vendorData); // יצירת ספק חדש
             }
 
             saveData();
@@ -352,14 +365,14 @@
             updateStats();
         });
 
-        // --- ממשק מנהל: ניהול קטגוריות (הפעלה/השבתה) ---
+        // --- ממשק מנהל: ניהול קטגוריות והסרה מצפייה ---
         function renderAdminCategories() {
             const container = document.getElementById('adminCategoriesContainer');
             container.innerHTML = '';
 
             categories.forEach(cat => {
                 const badgeColor = cat.active ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300';
-                const statusText = cat.active ? 'פעיל (גלוי)' : 'לא פעיל (מוסתר)';
+                const statusText = cat.active ? 'פעיל (מוצג)' : 'לא פעיל (מוסתר)';
                 const icon = cat.active ? 'fa-eye text-emerald-600' : 'fa-eye-slash text-rose-500';
 
                 container.innerHTML += `
@@ -367,7 +380,7 @@
                         <span class="font-semibold text-sm text-gray-700">${cat.name}</span>
                         <div class="flex items-center gap-2">
                             <span class="text-xs px-2 py-0.5 rounded-full border ${badgeColor}">${statusText}</span>
-                            <button onclick="toggleCategoryStatus('${cat.id}')" title="שנה סטטוס" class="p-1.5 hover:bg-gray-100 rounded transition-all">
+                            <button onclick="toggleCategoryStatus('${cat.id}')" title="שינוי נראות קטגוריה" class="p-1.5 hover:bg-gray-100 rounded transition-all">
                                 <i class="fa-solid ${icon} text-sm"></i>
                             </button>
                         </div>
@@ -383,6 +396,10 @@
                 saveData();
                 renderAdminCategories();
                 updateStats();
+                if (!isAdminView) {
+                    renderUserCategories();
+                    renderUserList();
+                }
             }
         }
 
@@ -408,7 +425,7 @@
             });
         }
 
-        // --- ממשק מנהל: טבלת ספקים ---
+        // --- ממשק מנהל: טבלת ספקים פונקציונלית ---
         function renderAdminTable() {
             const tbody = document.getElementById('adminTableBody');
             const searchVal = document.getElementById('adminSearchInput').value.toLowerCase();
@@ -434,7 +451,7 @@
                         <td class="py-3 px-4">
                             <span class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 border border-gray-200">
                                 ${catName}
-                                ${!catActive ? ' <span class="text-rose-500 font-bold">(קטגוריה מוסתרת)</span>' : ''}
+                                ${!catActive ? ' <span class="text-rose-500 font-bold">(מוסתרת מהמשתמשים)</span>' : ''}
                             </span>
                         </td>
                         <td class="py-3 px-4 text-xs">
@@ -442,7 +459,7 @@
                             <div class="text-gray-500">${vendor.phone}</div>
                         </td>
                         <td class="py-3 px-4 text-amber-500 font-bold">
-                            ★ ${vendor.rating.toFixed(1)}
+                            ★ ${vendor.rating.toFixed(1)} <span class="text-gray-400 text-xs font-normal">(${vendor.ratingsCount || 1} דירוגים)</span>
                         </td>
                         <td class="py-3 px-4">
                             <div class="flex justify-center gap-2">
@@ -472,7 +489,6 @@
 
             document.getElementById('formTitle').textContent = "עריכת ספק: " + vendor.name;
             
-            // גלילה למעלה ופתיחת הטופס
             const form = document.getElementById('vendorForm');
             form.classList.remove('hidden');
             document.getElementById('formChevron').classList.add('rotate-180');
@@ -488,10 +504,11 @@
             }
         }
 
-        // עדכון סטטיסטיקות מהיר
+        // עדכון סטטיסטיקות פאנל מנהל
         function updateStats() {
             document.getElementById('statTotalVendors').textContent = vendors.length;
             document.getElementById('statActiveCategories').textContent = categories.filter(c => c.active).length;
+            document.getElementById('statInactiveCategories').textContent = categories.filter(c => !c.active).length;
             
             const totalRatings = vendors.reduce((sum, v) => sum + v.rating, 0);
             const avg = vendors.length ? (totalRatings / vendors.length).toFixed(1) : "0.0";
@@ -503,14 +520,19 @@
             const container = document.getElementById('userCategoriesContainer');
             container.innerHTML = '';
 
-            // מציגים אך ורק קטגוריות פעילות!
+            // מציגים אך ורק קטגוריות מסומנות כפעילות!
             const activeCats = categories.filter(c => c.active);
 
-            // כפתור "הכל"
+            // חישוב כמות הספקים המוצגים בקטגוריות הפעילות בלבד
+            const activeVendorsCount = vendors.filter(v => {
+                const cat = categories.find(c => c.id === v.category);
+                return cat && cat.active;
+            }).length;
+
             const activeAllClass = currentFilterCategory === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white hover:bg-gray-100 text-gray-700';
             container.innerHTML += `
                 <button onclick="setFilterCategory('all')" class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${activeAllClass}">
-                    הכל (${vendors.filter(v => categories.find(c => c.id === v.category)?.active).length})
+                    הכל (${activeVendorsCount})
                 </button>
             `;
 
@@ -532,17 +554,34 @@
             renderUserList();
         }
 
+        // דירוג ספקים אינטראקטיבי בממשק המשתמש (מנגנון הדירוגים המקורי)
+        function rateVendor(vendorIndex, starValue) {
+            const vendor = vendors[vendorIndex];
+            const currentRating = vendor.rating || 5;
+            const currentCount = vendor.ratingsCount || 1;
+            
+            // חישוב ממוצע משוקלל חדש
+            const newCount = currentCount + 1;
+            const newRating = ((currentRating * currentCount) + starValue) / newCount;
+            
+            vendors[vendorIndex].rating = parseFloat(newRating.toFixed(1));
+            vendors[vendorIndex].ratingsCount = newCount;
+            
+            saveData();
+            renderUserList();
+            updateStats();
+        }
+
         function renderUserList() {
             const grid = document.getElementById('vendorsGrid');
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
             grid.innerHTML = '';
 
-            // יצירת רשימה של קטגוריות פעילות לבדיקת נראות מהירה
             const activeCategoryIds = categories.filter(c => c.active).map(c => c.id);
 
-            vendors.forEach(vendor => {
-                // בדיקת סינון לפי קטגוריה וגם בדיקה שהקטגוריה עצמה פעילה!
-                if (!activeCategoryIds.includes(vendor.category)) return; // לא מציגים אם קטגוריה כבויה
+            vendors.forEach((vendor, index) => {
+                // בדיקת סינון לפי קטגוריה פעילה
+                if (!activeCategoryIds.includes(vendor.category)) return;
                 if (currentFilterCategory !== 'all' && vendor.category !== currentFilterCategory) return;
 
                 // חיפוש חופשי
@@ -553,13 +592,16 @@
                     return;
                 }
 
-                // יצירת כוכבים לדירוג
+                // יצירת כוכבי דירוג אינטראקטיביים ללחיצה
                 let starsHTML = '';
-                const rating = Math.round(vendor.rating);
+                const ratingValue = Math.round(vendor.rating || 5);
                 for (let i = 1; i <= 5; i++) {
-                    starsHTML += i <= rating 
-                        ? '<i class="fa-solid fa-star text-amber-400"></i>' 
-                        : '<i class="fa-regular fa-star text-gray-300"></i>';
+                    const isFilled = i <= ratingValue;
+                    starsHTML += `
+                        <button onclick="rateVendor(${index}, ${i})" class="hover:scale-125 transition-transform" title="דרג ${i} כוכבים">
+                            <i class="${isFilled ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star text-gray-300'}"></i>
+                        </button>
+                    `;
                 }
 
                 const catName = categories.find(c => c.id === vendor.category)?.name || 'כללי';
@@ -569,17 +611,20 @@
                         <div>
                             <div class="flex justify-between items-start mb-3">
                                 <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">${catName}</span>
-                                <div class="flex text-sm">${starsHTML}</div>
+                                <div class="flex gap-1 items-center">
+                                    <div class="flex text-sm ml-1">${starsHTML}</div>
+                                    <span class="text-xs text-gray-500 font-bold">(${vendor.rating.toFixed(1)})</span>
+                                </div>
                             </div>
                             <h4 class="text-xl font-bold text-indigo-950 mb-2">${vendor.name}</h4>
-                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">${vendor.notes || 'אין הערות נוספות עבור ספק זה.'}</p>
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-3">${vendor.notes || 'אין הערות נוספות עבור ספק זה.'}</p>
                         </div>
                         
                         <div class="border-t pt-4 space-y-3">
                             <div class="flex items-center justify-between text-sm text-gray-700">
                                 <span class="flex items-center gap-2">
                                     <i class="fa-solid fa-user text-gray-400"></i>
-                                    ${vendor.contact || 'אין איש קשר מוגדר'}
+                                    ${vendor.contact || 'אין איש קשר'}
                                 </span>
                                 ${vendor.email ? `
                                 <a href="mailto:${vendor.email}" class="text-indigo-600 hover:underline flex items-center gap-1" title="${vendor.email}">
@@ -587,7 +632,7 @@
                                 </a>` : ''}
                             </div>
                             
-                            <!-- כפתור חיוג מהיר / יצירת קשר -->
+                            <!-- כפתור חיוג מהיר -->
                             <a href="tel:${vendor.phone}" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-sm">
                                 <i class="fa-solid fa-phone"></i>
                                 התקשר: ${vendor.phone}
